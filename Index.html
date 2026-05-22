@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MaxMagia — Магия практик</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Caveat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:           #09090e;
+  --surface:      rgba(255,255,255,0.032);
+  --surface-hover:rgba(255,255,255,0.058);
+  --gold:         #c8a96e;
+  --gold-hi:      #e2c48a;
+  --gold-lo:      rgba(200,169,110,0.18);
+  --gold-border:  rgba(200,169,110,0.22);
+  --white:        #f2ede5;
+  --muted:        #64606e;
+  --muted-2:      #42404e;
+  --green:        #34d27a;
+  --r:            18px;
+  --r-sm:         13px;
+  --font-serif:   'Playfair Display', Georgia, serif;
+  --font-sans:    'DM Sans', system-ui, sans-serif;
+  --font-hand:    'Caveat', cursive;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height:100%; background:var(--bg);
+  color:var(--white); font-family:var(--font-sans);
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+body::before {
+  content:''; position:fixed; z-index:0; pointer-events:none;
+  top:-20%; left:50%; transform:translateX(-50%);
+  width:700px; height:380px;
+  background:radial-gradient(ellipse at center, rgba(200,169,110,0.07) 0%, transparent 68%);
+}
+body::after {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.35;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+}
+
+/* SCREENS */
+.screen {
+  position:fixed; inset:0; z-index:1;
+  overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+  opacity:0; transform:translateX(46px); pointer-events:none;
+  transition:opacity .36s cubic-bezier(.4,0,.2,1), transform .36s cubic-bezier(.4,0,.2,1);
+  padding-bottom:36px;
+}
+.screen.active { opacity:1; transform:translateX(0); pointer-events:all; }
+.screen.exit   { opacity:0; transform:translateX(-46px); }
+
+/* HEADER */
+.header {
+  padding:22px 20px 14px; position:sticky; top:0; z-index:10;
+  background:linear-gradient(180deg, var(--bg) 72%, transparent);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+}
+.header-row { display:flex; align-items:flex-start; justify-content:space-between; }
+.header-eyebrow { font-size:9.5px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--gold); opacity:.75; margin-bottom:5px; transition:color .8s ease; }
+.header-name { font-family:var(--font-serif); font-size:26px; font-weight:700; color:var(--white); line-height:1.15; }
+.header-greeting { font-family:var(--font-hand); font-size:15px; font-style:italic; color:var(--gold); opacity:.7; margin-top:3px; line-height:1.3; transition:all .6s ease; }
+
+.status-pill { display:flex; align-items:center; gap:6px; background:rgba(52,210,122,.07); border:1px solid rgba(52,210,122,.18); border-radius:20px; padding:5px 11px; margin-top:2px; transition:all .4s ease; cursor:pointer; }
+.status-pill.streak-active { background:rgba(255,140,50,.1); border-color:rgba(255,140,50,.25); }
+.status-dot { width:6px; height:6px; background:var(--green); border-radius:50%; box-shadow:0 0 6px var(--green); animation:blink 2.6s ease-in-out infinite; transition:background .4s ease, box-shadow .4s ease; }
+.status-pill.streak-active .status-dot { background:#ff8c32; box-shadow:0 0 8px #ff8c32; animation:blink-fire 1.8s ease-in-out infinite; }
+.status-text { font-size:10px; font-weight:500; color:var(--green); letter-spacing:.4px; transition:color .4s ease; }
+
+@keyframes blink { 0%,100%{opacity:1;box-shadow:0 0 6px var(--green)} 50%{opacity:.55;box-shadow:0 0 14px var(--green)} }
+@keyframes blink-fire { 0%,100%{opacity:1;box-shadow:0 0 8px #ff8c32} 50%{opacity:.5;box-shadow:0 0 18px #ff8c32} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes newPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,80,80,0)} 50%{box-shadow:0 0 0 4px rgba(255,80,80,.12)} }
+
+.hairline { height:1px; margin:0 20px; background:linear-gradient(90deg, transparent, var(--gold-border), transparent); }
+
+/* BROADCAST */
+.broadcast-card {
+  margin:16px 16px 0; padding:20px;
+  background:linear-gradient(135deg, rgba(200,169,110,.07), rgba(200,169,110,.02));
+  border:1px solid var(--gold-border); border-radius:var(--r); position:relative; overflow:hidden;
+}
+.broadcast-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, var(--gold), transparent); }
+.bc-tag { font-size:9px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:9px; }
+.bc-title { font-family:var(--font-serif); font-size:17px; font-weight:700; color:var(--white); margin-bottom:5px; line-height:1.3; }
+.bc-meta { font-size:13px; color:var(--muted); margin-bottom:16px; }
+.bc-meta strong { color:rgba(242,237,229,.72); font-weight:500; }
+.zoom-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  background:linear-gradient(135deg, var(--gold) 0%, #9e7540 100%);
+  color:#08080e; font-family:var(--font-sans); font-weight:700; font-size:13.5px;
+  padding:11px 22px; border:none; border-radius:11px; cursor:pointer;
+  box-shadow:0 4px 18px rgba(200,169,110,.28); transition:all .18s; letter-spacing:.15px;
+}
+.zoom-btn:active { transform:scale(.96); box-shadow:0 2px 8px rgba(200,169,110,.18); }
+
+/* ACTION ROW */
+.action-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 16px 0; }
+.action-btn {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:5px; padding:13px 10px; background:var(--surface);
+  border:1px solid rgba(255,255,255,.07); border-radius:var(--r-sm);
+  cursor:pointer; transition:all .18s; text-align:center;
+}
+.action-btn:active { background:var(--surface-hover); transform:scale(.97); }
+.action-btn-icon { font-size:20px; line-height:1; }
+.action-btn-label { font-size:12.5px; font-weight:500; color:var(--white); opacity:.82; line-height:1.3; }
+
+/* CONTINUE BANNER */
+.continue-banner {
+  margin:10px 16px 0; padding:14px 16px;
+  background:linear-gradient(135deg, rgba(52,210,122,.07), rgba(52,210,122,.02));
+  border:1px solid rgba(52,210,122,.18); border-radius:var(--r-sm);
+  display:flex; align-items:center; gap:12px;
+  cursor:pointer; transition:all .2s; position:relative; overflow:hidden;
+}
+.continue-banner::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, rgba(52,210,122,.4), transparent); }
+.continue-banner:active { transform:scale(.98); }
+.cb-icon { font-size:22px; }
+.cb-body { flex:1; }
+.cb-label { font-size:9px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--green); opacity:.7; margin-bottom:2px; }
+.cb-title { font-size:14px; font-weight:500; color:var(--white); opacity:.88; line-height:1.35; }
+.cb-arrow { font-size:18px; color:var(--green); opacity:.4; }
+
+/* SECTION */
+.section-header { padding:24px 20px 10px; display:flex; align-items:center; gap:10px; }
+.section-label { font-size:9.5px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+.section-line { flex:1; height:1px; background:linear-gradient(90deg, rgba(255,255,255,.065), transparent); }
+
+/* CARDS */
+.cards-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 16px; }
+.card {
+  background:var(--surface); border:1px solid rgba(255,255,255,.06);
+  border-radius:var(--r); padding:18px 15px; cursor:pointer;
+  position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; gap:5px;
+  transition:all .22s cubic-bezier(.4,0,.2,1); animation:fadeUp .4s ease both;
+}
+.card::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,.04), transparent); opacity:0; transition:opacity .2s; }
+.card:active { transform:scale(.96); border-color:var(--gold-border); }
+.card:active::after { opacity:1; }
+.card-icon  { font-size:26px; line-height:1; margin-bottom:2px; text-align:center; }
+.card-name  { font-family:var(--font-serif); font-size:14px; font-weight:700; color:var(--white); line-height:1.3; text-align:center; }
+.card-desc  { font-size:11px; color:var(--muted); font-weight:400; line-height:1.45; text-align:center; }
+.card-arrow { margin-top:6px; color:var(--gold); font-size:14px; opacity:.45; text-align:center; }
+.card-badge {
+  position:absolute; top:10px; right:10px;
+  font-size:9px; font-weight:700; padding:2px 7px; border-radius:8px; z-index:2;
+  background:rgba(200,169,110,.15); color:var(--gold); border:1px solid rgba(200,169,110,.25);
+  display:none;
+}
+.card-badge.new-badge {
+  background:rgba(255,80,80,.13); color:#ff7575; border-color:rgba(255,100,100,.28);
+  animation:newPulse 2.4s ease-in-out infinite; display:block;
+}
+.card-full { grid-column:span 2; flex-direction:row; align-items:center; padding:15px 18px; gap:14px; }
+.card-full .card-icon { font-size:28px; margin-bottom:0; text-align:left; }
+.card-full .card-body { flex:1; }
+.card-full .card-name { text-align:left; }
+.card-full .card-desc { text-align:left; }
+.card-full .card-arrow { margin-top:0; font-size:16px; text-align:left; }
+
+/* CARD OF THE DAY */
+.cotd-card {
+  margin:20px 16px 10px; padding:18px 20px;
+  background:linear-gradient(135deg, rgba(180,130,200,.06), rgba(180,130,200,.015));
+  border:1px solid rgba(180,130,200,.2); border-radius:var(--r); position:relative; overflow:hidden;
+}
+.cotd-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, rgba(200,180,220,.4), transparent); }
+.cotd-tag { font-size:9px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; color:#c8b4dc; display:block; margin-bottom:8px; }
+.cotd-body { display:flex; align-items:flex-start; gap:14px; }
+.cotd-icon { font-size:34px; flex-shrink:0; }
+.cotd-text { font-family:var(--font-hand); font-size:17px; font-weight:500; color:rgba(242,237,229,.9); line-height:1.4; font-style:italic; flex:1; }
+.cotd-footer { display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
+.cotd-action { font-size:11px; font-weight:600; color:#c8b4dc; opacity:.7; }
+.cotd-fav {
+  display:flex; align-items:center; gap:5px; padding:5px 12px;
+  background:rgba(200,180,220,.08); border:1px solid rgba(200,180,220,.18);
+  border-radius:10px; cursor:pointer; transition:all .2s;
+  font-size:11px; font-weight:600; color:#c8b4dc; opacity:.7;
+}
+.cotd-fav:active { background:rgba(200,180,220,.18); opacity:1; }
+.cotd-fav.saved { color:#e8b4f8; opacity:1; background:rgba(200,100,255,.1); border-color:rgba(200,100,255,.25); }
+
+/* BOLTALKA */
+.boltalka-wrap { padding:20px 16px 0; }
+.bd { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.bd-line { flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--gold-border), transparent); }
+.bd-text { font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:var(--gold); opacity:.55; font-weight:600; }
+.boltalka-btn {
+  display:flex; align-items:center; gap:12px; width:100%; padding:15px 18px;
+  background:linear-gradient(135deg, rgba(200,169,110,.09), rgba(200,169,110,.03));
+  border:1px solid var(--gold-border); border-radius:var(--r);
+  cursor:pointer; text-decoration:none; transition:all .2s; position:relative; overflow:hidden;
+  margin-bottom:8px;
+}
+.boltalka-btn::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, var(--gold), transparent); }
+.boltalka-btn:active { transform:scale(.98); }
+.bb-icon  { font-size:22px; }
+.bb-body  { flex:1; }
+.bb-title { font-size:15px; font-weight:600; color:var(--gold-hi); }
+.bb-sub   { font-size:11px; color:var(--gold); opacity:.5; font-weight:400; margin-top:1px; }
+.bb-arrow { font-size:18px; color:var(--gold); opacity:.35; }
+
+/* SUBPAGE */
+.subpage-header {
+  padding:16px 16px 0; position:sticky; top:0; z-index:10;
+  background:linear-gradient(180deg, var(--bg) 78%, transparent);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+}
+.back-btn {
+  display:inline-flex; align-items:center; gap:6px; background:none;
+  border:1px solid rgba(255,255,255,.08); color:var(--muted);
+  font-family:var(--font-sans); font-size:13px; font-weight:500;
+  padding:7px 14px 7px 10px; border-radius:20px; cursor:pointer; margin-bottom:18px; transition:all .18s;
+}
+.back-btn:active { background:rgba(255,255,255,.05); color:var(--white); }
+.sp-icon  { font-size:30px; margin-bottom:5px; }
+.sp-title { font-family:var(--font-serif); font-size:23px; font-weight:700; color:var(--white); margin-bottom:2px; }
+.sp-desc  { font-size:13px; color:var(--muted); margin-bottom:10px; }
+.sp-progress-wrap { display:flex; align-items:center; gap:8px; margin-bottom:18px; }
+.sp-progress-bar { flex:1; height:3px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden; }
+.sp-progress-fill { height:100%; background:linear-gradient(90deg, var(--gold-lo), var(--gold)); border-radius:3px; transition:width .5s ease; }
+.sp-progress-text { font-size:10px; font-weight:600; color:var(--gold); opacity:.65; white-space:nowrap; }
+
+/* LESSONS */
+.lessons { padding:8px 16px; display:flex; flex-direction:column; gap:6px; }
+.lesson {
+  display:flex; align-items:center; gap:13px;
+  background:var(--surface); border:1px solid rgba(255,255,255,.055);
+  border-radius:var(--r-sm); padding:13px 15px;
+  cursor:pointer; text-decoration:none; color:var(--white);
+  transition:all .17s; animation:fadeUp .3s ease both; position:relative;
+}
+.lesson:nth-child(1){animation-delay:.03s}.lesson:nth-child(2){animation-delay:.06s}
+.lesson:nth-child(3){animation-delay:.09s}.lesson:nth-child(4){animation-delay:.12s}
+.lesson:nth-child(5){animation-delay:.15s}.lesson:nth-child(6){animation-delay:.18s}
+.lesson:nth-child(7){animation-delay:.21s}.lesson:nth-child(8){animation-delay:.24s}
+.lesson:nth-child(9){animation-delay:.27s}
+.lesson:active { background:var(--surface-hover); border-color:var(--gold-border); transform:scale(.98); }
+.lesson.done { border-color:rgba(52,210,122,.2); background:rgba(52,210,122,.03); }
+.l-num  { font-family:var(--font-serif); font-size:13px; font-weight:700; color:var(--gold); opacity:.45; min-width:22px; }
+.lesson.done .l-num { color:var(--green); opacity:.7; }
+.l-text { flex:1; font-size:14px; font-weight:400; line-height:1.4; opacity:.87; }
+.lesson.done .l-text { opacity:.45; text-decoration:line-through; text-decoration-color:rgba(255,255,255,.12); }
+.l-chev { font-size:16px; color:var(--muted-2); flex-shrink:0; }
+.l-soon { font-size:10px; font-weight:500; white-space:nowrap; background:rgba(200,169,110,.08); border:1px solid rgba(200,169,110,.16); color:var(--gold); padding:2px 8px; border-radius:6px; flex-shrink:0; }
+.l-new  { font-size:10px; font-weight:700; white-space:nowrap; flex-shrink:0; background:rgba(255,80,80,.13); border:1px solid rgba(255,100,100,.28); color:#ff7575; padding:2px 8px; border-radius:6px; animation:newPulse 2.4s ease-in-out infinite; }
+
+/* CHECK BUTTON */
+.l-check {
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  background:rgba(255,255,255,.05); border:1.5px solid rgba(255,255,255,.12);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; cursor:pointer; transition:all .2s; color:transparent;
+}
+.l-check:active { transform:scale(.88); }
+.lesson.done .l-check { background:rgba(52,210,122,.15); border-color:rgba(52,210,122,.4); color:var(--green); }
+
+/* NOTES */
+.lesson-note-wrap { margin-top: -4px; margin-bottom: 12px; padding:0 16px; display:none; }
+.lesson-note-wrap.open { display:block; }
+.lesson-note { width:100%; padding:10px 14px; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.07); border-radius:var(--r-sm); color:var(--white); font-family:var(--font-hand); font-size:16px; resize:none; line-height:1.5; outline:none; transition:border-color .2s; }
+.lesson-note:focus { border-color:var(--gold-border); }
+.lesson-note::placeholder { color:var(--muted); }
+.notes-toggle { font-size:11px; color:var(--gold); opacity:.55; padding:0 16px 0 16px; cursor:pointer; transition:opacity .2s; text-align:right; display:block; margin-top:-6px; margin-bottom:4px; }
+.notes-toggle:active { opacity:.9; }
+.note-actions { display:flex; gap:8px; margin-top:8px; justify-content:flex-end; align-items:center; }
+.note-save-btn { padding:8px 16px; background:var(--gold-lo); border:1px solid var(--gold-border); color:var(--gold); font-family:var(--font-sans); font-size:12px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .18s; }
+.note-save-btn:active { background:rgba(200,169,110,.3); }
+.note-saved-badge { font-size:11px; color:var(--green); opacity:.7; margin-top:6px; display:none; text-align:right; }
+
+/* OTHER */
+.other-grid { padding:8px 16px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.other-card {
+  background:var(--surface); border:1px solid rgba(255,255,255,.06); border-radius:var(--r);
+  padding:24px 14px 20px; display:flex; flex-direction:column; align-items:center; gap:10px;
+  cursor:pointer; text-decoration:none; color:var(--white); transition:all .2s; animation:fadeUp .3s ease both;
+}
+.other-card:nth-child(1){animation-delay:.03s}.other-card:nth-child(2){animation-delay:.06s}
+.other-card:nth-child(3){animation-delay:.09s}.other-card:nth-child(4){animation-delay:.12s}
+.other-card:active { border-color:var(--gold-border); background:var(--surface-hover); transform:scale(.96); }
+.oc-icon { font-size:30px; }
+.oc-text { font-size:13px; font-weight:500; text-align:center; line-height:1.3; opacity:.84; }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
+  z-index:200; background:#1c1c28; border:1px solid rgba(52,210,122,.3);
+  border-radius:20px; padding:9px 20px; font-size:13px; font-weight:500;
+  color:var(--green); opacity:0; transition:all .3s; white-space:nowrap;
+  box-shadow:0 8px 24px rgba(0,0,0,.4); pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* SCHEDULE MODAL */
+.modal-overlay {
+  position:fixed; inset:0; z-index:100;
+  background:rgba(0,0,0,.72); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .32s ease;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal-sheet {
+  width:100%; background:#13100c; border-radius:28px 28px 0 0;
+  border-top:1px solid rgba(200,169,110,.25); padding:0 0 40px; max-height:88vh;
+  display:flex; flex-direction:column;
+  transform:translateY(100%); transition:transform .38s cubic-bezier(.32,0,.15,1);
+  position:relative; overflow:hidden;
+}
+.modal-overlay.open .modal-sheet { transform:translateY(0); }
+.modal-sheet::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0; opacity:.18;
+  background-image:
+  repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 28px),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");
+}
+.modal-drag { width:40px; height:4px; border-radius:2px; background:rgba(255,255,255,.15); margin:12px auto 0; flex-shrink:0; position:relative; z-index:1; }
+.modal-head { padding:18px 20px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(200,169,110,.12); flex-shrink:0; position:relative; z-index:1; }
+.modal-title-wrap { display:flex; align-items:center; gap:10px; }
+.modal-notebook-icon { font-size:26px; }
+.modal-title { font-family:var(--font-serif); font-size:20px; font-weight:700; color:var(--white); line-height:1.2; }
+.modal-subtitle { font-size:11px; color:var(--gold); opacity:.6; letter-spacing:.5px; margin-top:1px; }
+.modal-close { width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); color:var(--muted); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .18s; flex-shrink:0; }
+.modal-close:active { background:rgba(255,255,255,.14); color:var(--white); }
+.notebook-scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px 16px 0; position:relative; z-index:1; }
+.nb-month { display:flex; align-items:center; gap:10px; margin-bottom:10px; margin-top:4px; }
+.nb-month:not(:first-child) { margin-top:22px; }
+.nb-month-label { font-family:var(--font-hand); font-size:19px; font-weight:600; color:var(--gold); letter-spacing:.5px; }
+.nb-month-line { flex:1; height:1px; background:linear-gradient(90deg, var(--gold-border), transparent); }
+.nb-event { display:flex; gap:14px; align-items:flex-start; padding:14px 16px; margin-bottom:8px; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.065); border-left:3px solid var(--gold-border); border-radius:0 var(--r-sm) var(--r-sm) 0; position:relative; overflow:hidden; animation:fadeUp .3s ease both; }
+.nb-event::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg, rgba(200,169,110,.04), transparent 50%); }
+.nb-date-badge { display:flex; flex-direction:column; align-items:center; background:rgba(200,169,110,.1); border:1px solid var(--gold-border); border-radius:10px; padding:7px 10px; min-width:46px; flex-shrink:0; }
+.nb-day { font-family:var(--font-serif); font-size:20px; font-weight:700; color:var(--gold); line-height:1; }
+.nb-wday { font-size:9px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); opacity:.6; margin-top:2px; }
+.nb-body { flex:1; position:relative; z-index:1; }
+.nb-time { font-family:var(--font-hand); font-size:16px; color:var(--gold); opacity:.7; line-height:1.2; margin-bottom:3px; }
+.nb-name { font-family:var(--font-serif); font-size:15px; font-weight:600; color:var(--white); line-height:1.35; margin-bottom:8px; }
+.nb-zoom-link { display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, var(--gold), #9e7540); color:#08080e; font-family:var(--font-sans); font-weight:700; font-size:12px; padding:7px 14px; border-radius:8px; text-decoration:none; cursor:pointer; border:none; box-shadow:0 3px 12px rgba(200,169,110,.22); transition:all .18s; }
+.nb-zoom-link:active { transform:scale(.95); }
+.nb-empty { text-align:center; padding:48px 20px; font-family:var(--font-hand); font-size:22px; color:var(--muted); line-height:1.6; }
+</style>
+
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══ DASHBOARD ═══ -->
+
+<div class="screen active" id="screen-home">
+  <div class="header">
+    <div class="header-row">
+      <div>
+        <div class="header-eyebrow" id="eyebrow-text">Личный кабинет</div>
+        <div class="header-name">Привет, <span id="username">Участник</span></div>
+        <div class="header-greeting" id="greeting-sub"></div>
+      </div>
+      <div class="status-pill" id="status-pill" onclick="toggleTheme()">
+        <div class="status-dot"></div>
+        <span class="status-text" id="status-text">online</span>
+      </div>
+    </div>
+  </div>
+  <div class="hairline"></div>
+
+  <div class="broadcast-card">
+    <span class="bc-tag">⚡ Ближайший эфир</span>
+    <div class="bc-title">Живой разбор запросов</div>
+    <div class="bc-meta">📅 <strong id="next-date">...</strong> · 20:00 МСК</div>
+    <button class="zoom-btn" onclick="openLink('https://zoom.us')">🎥 Войти в Zoom</button>
+  </div>
+
+  <div class="action-row">
+    <button class="action-btn" onclick="openLink('https://t.me/c/3955955328/75')">
+      <span class="action-btn-icon">🙋</span>
+      <span class="action-btn-label">Задай свой<br>вопрос</span>
+    </button>
+    <button class="action-btn" onclick="openSchedule()">
+      <span class="action-btn-icon">📅</span>
+      <span class="action-btn-label">Расписание<br>встреч</span>
+    </button>
+  </div>
+
+  <!-- Continue banner -->
+  <div class="continue-banner" id="continue-banner" style="display:none" onclick="continueLesson()">
+    <span class="cb-icon">▶</span>
+    <div class="cb-body">
+      <div class="cb-label">Продолжи с того места</div>
+      <div class="cb-title" id="continue-title">...</div>
+    </div>
+    <span class="cb-arrow">›</span>
+  </div>
+
+  <div class="section-header">
+    <span class="section-label">Практики</span>
+    <span class="section-line"></span>
+  </div>
+  <div class="cards-grid">
+    <div class="card" onclick="showScreen('antistress')" style="animation-delay:.05s">
+      <div class="card-icon">🧘</div>
+      <div class="card-name">ANTIстресс</div>
+      <div class="card-desc">Снять напряжение здесь и сейчас</div>
+      <span class="card-badge" id="badge-antistress"></span>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card" onclick="showScreen('shield')" style="animation-delay:.08s">
+      <div class="card-icon">🛡</div>
+      <div class="card-name">Твой Щит</div>
+      <div class="card-desc">Границы и защита от токсиков</div>
+      <span class="card-badge" id="badge-shield"></span>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card" onclick="showScreen('code')" style="animation-delay:.11s">
+      <div class="card-icon">🧬</div>
+      <div class="card-name">Код Личности</div>
+      <div class="card-desc">Проработка сценариев прошлого</div>
+      <span class="card-badge" id="badge-code"></span>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card" onclick="showScreen('future')" style="animation-delay:.14s">
+      <div class="card-icon">✨</div>
+      <div class="card-name">Будущее и мечты</div>
+      <div class="card-desc">Проектирование реальности</div>
+      <span class="card-badge" id="badge-future"></span>
+      <div class="card-arrow">›</div>
+    </div>
+  </div>
+
+  <div class="boltalka-wrap">
+    <div class="bd"><div class="bd-line"></div><div class="bd-text">Сообщество</div><div class="bd-line"></div></div>
+    <div class="boltalka-btn" onclick="openLink('https://t.me/c/3955955328/20')">
+      <span class="bb-icon">💬</span>
+      <div class="bb-body"><div class="bb-title">Болталка</div><div class="bb-sub">Общий чат участников</div></div>
+      <span class="bb-arrow">›</span>
+    </div>
+    <div class="boltalka-btn" onclick="openLink('https://t.me/c/3955955328/5')">
+      <span class="bb-icon">🤖</span>
+      <div class="bb-body"><div class="bb-title">Болталка про ИИ</div><div class="bb-sub">Обсуждение нейронок</div></div>
+      <span class="bb-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-label">Инструменты</span>
+    <span class="section-line"></span>
+  </div>
+  <div class="cards-grid">
+    <div class="card" onclick="showScreen('ai')" style="animation-delay:.17s">
+      <div class="card-icon">🤖</div>
+      <div class="card-name">Лаборатория ИИ</div>
+      <div class="card-desc">Промпты и нейронки для жизни</div>
+      <span class="card-badge" id="badge-ai"></span>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card" onclick="showScreen('archive')" style="animation-delay:.20s">
+      <div class="card-icon">📼</div>
+      <div class="card-name">AMA Сессии</div>
+      <div class="card-desc">Архив записей прошлого</div>
+      <span class="card-badge" id="badge-archive"></span>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card card-full" onclick="showScreen('other')" style="animation-delay:.23s">
+      <div class="card-icon">📦</div>
+      <div class="card-body"><div class="card-name">Прочее</div><div class="card-desc">Книги, разминки, здоровье</div></div>
+      <div class="card-arrow">›</div>
+    </div>
+  </div>
+
+  <!-- Card of the day с избранным -->
+  <div class="cotd-card">
+    <span class="cotd-tag" id="cotd-tag">🃏 Карта дня</span>
+    <div class="cotd-body">
+      <span class="cotd-icon" id="cotd-icon">✦</span>
+      <span class="cotd-text" id="cotd-text">...</span>
+    </div>
+    <div class="cotd-footer">
+      <div class="cotd-action" id="cotd-action"></div>
+      <div class="cotd-fav" id="cotd-fav" onclick="toggleFavCotd()">
+        <span id="cotd-fav-icon">♡</span>
+        <span id="cotd-fav-label">В избранное</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ANTISTRESS ═══ -->
+
+<div class="screen" id="screen-antistress">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">🧘</div><div class="sp-title">ANTIстресс</div>
+    <div class="sp-desc">Снять напряжение здесь и сейчас</div>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-bar"><div class="sp-progress-fill" id="progress-antistress" style="width:0%"></div></div>
+      <span class="sp-progress-text" id="progress-text-antistress">0/9</span>
+    </div>
+  </div>
+  <div class="lessons" id="antistress-lessons"></div>
+</div>
+
+<!-- SHIELD -->
+<div class="screen" id="screen-shield">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">🛡</div><div class="sp-title">Твой Щит</div>
+    <div class="sp-desc">Границы и защита от токсиков</div>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-bar"><div class="sp-progress-fill" id="progress-shield" style="width:0%"></div></div>
+      <span class="sp-progress-text" id="progress-text-shield">0/8</span>
+    </div>
+  </div>
+  <div class="lessons" id="shield-lessons"></div>
+</div>
+
+<!-- CODE -->
+<div class="screen" id="screen-code">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">🧬</div><div class="sp-title">Код Личности</div>
+    <div class="sp-desc">Проработка сценариев прошлого</div>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-bar"><div class="sp-progress-fill" id="progress-code" style="width:0%"></div></div>
+      <span class="sp-progress-text" id="progress-text-code">0/5</span>
+    </div>
+  </div>
+  <div class="lessons" id="code-lessons"></div>
+</div>
+
+<!-- FUTURE -->
+<div class="screen" id="screen-future">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">✨</div><div class="sp-title">Будущее и мечты</div>
+    <div class="sp-desc">Проектирование реальности</div>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-bar"><div class="sp-progress-fill" id="progress-future" style="width:0%"></div></div>
+      <span class="sp-progress-text" id="progress-text-future">0/4</span>
+    </div>
+  </div>
+  <div class="lessons" id="future-lessons"></div>
+</div>
+
+<!-- AI -->
+<div class="screen" id="screen-ai">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">🤖</div><div class="sp-title">Лаборатория ИИ</div>
+    <div class="sp-desc">Промпты и нейронки для жизни</div>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-bar"><div class="sp-progress-fill" id="progress-ai" style="width:0%"></div></div>
+      <span class="sp-progress-text" id="progress-text-ai">0/1</span>
+    </div>
+  </div>
+  <div class="lessons" id="ai-lessons"></div>
+</div>
+
+<!-- ARCHIVE -->
+<div class="screen" id="screen-archive">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">📼</div><div class="sp-title">AMA Сессии</div>
+    <div class="sp-desc">Архив записей прошлого</div>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-bar"><div class="sp-progress-fill" id="progress-archive" style="width:0%"></div></div>
+      <span class="sp-progress-text" id="progress-text-archive">0/1</span>
+    </div>
+  </div>
+  <div class="lessons" id="archive-lessons"></div>
+</div>
+
+<!-- OTHER -->
+<div class="screen" id="screen-other">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">📦</div><div class="sp-title">Прочее</div>
+    <div class="sp-desc">Дополнительные материалы</div>
+  </div>
+  <div class="other-grid">
+    <a class="other-card" href="#" onclick="openLink('https://t.me/c/3955955328/24');return false;"><span class="oc-icon">📚</span><span class="oc-text">Фильмы / Сериалы / Книги</span></a>
+    <a class="other-card" href="#" onclick="openLink('https://t.me/c/3955955328/31');return false;"><span class="oc-icon">🏃</span><span class="oc-text">Разминки</span></a>
+    <a class="other-card" href="#" onclick="openLink('https://t.me/c/3955955328/7');return false;"><span class="oc-icon">🍏</span><span class="oc-text">Здоровье</span></a>
+    <a class="other-card" href="#" onclick="openLink('https://t.me/c/3955955328/17');return false;"><span class="oc-icon">📢</span><span class="oc-text">Прорекламируй себя</span></a>
+  </div>
+</div>
+
+<!-- ═══ SCHEDULE MODAL ═══ -->
+<div class="modal-overlay" id="schedule-modal" onclick="handleModalBg(event)">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <span class="modal-notebook-icon">📓</span>
+        <div><div class="modal-title">Расписание встреч</div><div class="modal-subtitle">Ежедневник участника</div></div>
+      </div>
+      <button class="modal-close" onclick="closeSchedule()">✕</button>
+    </div>
+    <div class="notebook-scroll" id="notebook-content"></div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   CONFIG
+───────────────────────────────────────────── */
+const NEW_DAYS = 7;
+const THEMES = {
+  dark:   { '--bg': '#09090e', '--surface': 'rgba(255,255,255,0.032)', '--muted': '#64606e' },
+  warm:   { '--bg': '#1a1410', '--surface': 'rgba(200,169,110,0.08)', '--muted': '#a6957c' },
+  forest: { '--bg': '#0e1712', '--surface': 'rgba(80,140,100,0.06)', '--muted': '#7c8f82' }
+};
+
+/* SCHEDULE DATA */
+const SCHEDULE = [
+  { date:'2026-05-29', time:'20:00', title:'Живой разбор запросов',            zoom:'https://zoom.us' },
+  { date:'2026-06-05', time:'20:00', title:'Работа с тревогой: практика',       zoom:'https://zoom.us' },
+  { date:'2026-06-12', time:'20:00', title:'Код Личности — открытая сессия',    zoom:'https://zoom.us' },
+  { date:'2026-06-19', time:'20:00', title:'AMA: Ваши вопросы — мои ответы',    zoom:'https://zoom.us' },
+  { date:'2026-07-03', time:'20:00', title:'Медитация и работа с телом',        zoom:'https://zoom.us' },
+  { date:'2026-07-17', time:'20:00', title:'Будущее и мечты: проектирование',   zoom:'https://zoom.us' },
+];
+
+/* LESSONS DATA */
+const LESSON_DATA = {
+  antistress: [
+    { title:'Базовые медитации эриксоновского гипноза', url:'https://t.me/c/3955955328/11/68', addedDate:'2026-05-22' },
+    { title:'Октябрь 25: Расслабляемся глубоко',        soon:true },
+    { title:'Ноябрь 25: Возвращение к себе',            soon:true },
+    { title:'Декабрь 25: Восстановление самоценности',  soon:true },
+    { title:'Январь 26: Работа с частями личности',     soon:true },
+    { title:'Март 26: Оттепель',                        soon:true },
+    { title:'Май 26: Жизнь в неопределённости',         soon:true },
+    { title:'Экспериментальные гипносессии 2015',       url:'https://t.me/c/3955955328/11/70', addedDate:'2026-05-25' },
+    { title:'Медитации других авторов',                 url:'https://t.me/c/3955955328/11/71' },
+  ],
+  shield: [
+    { title:'Что такое личные границы',    soon:true },
+    { title:'Виды токсичного общения',     soon:true },
+    { title:'Чувства при манипуляциях',   soon:true },
+    { title:'Если границы сломаны',       soon:true },
+    { title:'Защита психики',             soon:true },
+    { title:'Способ защиты №1',           soon:true },
+    { title:'Способ защиты №2',           soon:true },
+    { title:'Способ защиты №3',           soon:true },
+  ],
+  code: [
+    { title:'Введение: Понять свои реакции',      soon:true },
+    { title:'Последствия отсутствия эволюции',    soon:true },
+    { title:'Базовые психотравмы',                soon:true },
+    { title:'Родительские директивы',             soon:true },
+    { title:'Дезадаптивные схемы',                soon:true },
+  ],
+  future: [
+    { title:'Введение в проектирование жизни',   soon:true },
+    { title:'Колесо баланса и ценности',         soon:true },
+    { title:'Техника мечты и визуализации',      soon:true },
+    { title:'Препятствия на пути к цели',        soon:true },
+  ],
+  ai: [
+    { title:'Лаборатория ИИ — открыть канал', url:'https://t.me/c/3955955328/3', addedDate:'2026-05-22' },
+  ],
+  archive: [
+    { title:'AMA Сессии — открыть архив', url:'https://t.me/c/3955955328/13', addedDate:'2026-05-22' },
+  ],
+};
+
+/* CARD OF THE DAY */
+const COTD_DATA = [
+  { icon:'✦', tag:'Практика дня',    text:'Сделай паузу на 3 минуты. Закрой глаза и просто слушай своё дыхание. Ничего не меняй — просто наблюдай.',                          action:'↗ Попробовать сейчас' },
+  { icon:'🌙', tag:'Вечерний ритуал', text:'Перед сном запиши три вещи, за которые ты благодарен сегодня. Даже самые маленькие.',                                               action:'↗ Взять блокнот' },
+  { icon:'🔥', tag:'Сила дня',        text:'Сегодня твоя суперсила — умение сказать «нет». Позволь себе отказаться от того, что не твоё.',                                      action:'↗ Попробовать' },
+  { icon:'💧', tag:'Пауза',           text:'Выпей стакан воды. Медленно. Почувствуй каждый глоток. Твоё тело скажет спасибо.',                                                  action:'↗ Пойти за водой' },
+  { icon:'🪞', tag:'Зеркало',         text:'Посмотри на себя в зеркало и скажи вслух: «Я имею право быть собой. Со мной всё в порядке».',                                       action:'↗ Подойти к зеркалу' },
+  { icon:'📜', tag:'Вопрос дня',      text:'Что бы ты делал, если бы точно знал, что не провалишься? Запиши первое, что приходит.',                                             action:'↗ Записать' },
+  { icon:'🌿', tag:'Заземление',      text:'Найди взглядом 5 предметов вокруг. Мысленно назови их. Почувствуй опору под ногами.',                                               action:'↗ Оглядеться' },
+];
+
+const GREETINGS = [
+  'Сегодня отличный день для практики',
+  'Твоё присутствие здесь — уже шаг вперёд',
+  'Доверься процессу, всё идёт как надо',
+  'Выдели 10 минут — и мир изменится',
+  'Ты именно там, где должен быть сейчас',
+  'Магия начинается с тишины внутри',
+  'Слушай себя — ответы уже есть',
+];
+
+const MONTHS_RU  = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const WDAYS      = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+
+/* ─────────────────────────────────────────────
+   CLOUD STORAGE
+───────────────────────────────────────────── */
+const CS = {
+  _c: {},
+  _pending: {},
+
+  set(key, value) {
+    const v = JSON.stringify(value);
+    this._c[key] = v;
+    try {
+      if (Telegram?.WebApp?.CloudStorage) {
+        Telegram.WebApp.CloudStorage.setItem(key, v, () => {});
+      } else {
+        sessionStorage.setItem('mm_' + key, v);
+      }
+    } catch(e) { console.warn('Storage set error', e); }
+  },
+
+  get(key, cb) {
+    if (this._c[key] !== undefined) {
+      try { cb(JSON.parse(this._c[key])); } catch(e) { cb(null); }
+      return;
+    }
+    try {
+      if (Telegram?.WebApp?.CloudStorage) {
+        if (this._pending[key]) {
+          this._pending[key].push(cb);
+          return;
+        }
+        this._pending[key] = [cb];
+        Telegram.WebApp.CloudStorage.getItem(key, (err, val) => {
+          const callbacks = this._pending[key];
+          delete this._pending[key];
+          if (!err && val) { 
+            this._c[key] = val; 
+            callbacks.forEach(cb => { try { cb(JSON.parse(val)); } catch(e) { cb(null); } });
+          } else {
+            callbacks.forEach(cb => cb(null));
+          }
+        });
+      } else {
+        const val = sessionStorage.getItem('mm_' + key);
+        if (val) { this._c[key] = val; try { cb(JSON.parse(val)); } catch(e) { cb(null); } }
+        else cb(null);
+      }
+    } catch(e) { cb(null); }
+  },
+
+  loadAll(keys, cb) {
+    let pending = keys.length;
+    if (pending === 0) { cb(); return; }
+    keys.forEach(key => {
+      this.get(key, () => {
+        pending--;
+        if (pending === 0) cb();
+      });
+    });
+  }
+};
+
+/* PROGRESS */
+function getProgress(cat) {
+  const raw = CS._c['prog_' + cat];
+  if (!raw) return [];
+  try { return JSON.parse(raw); } catch(e) { return []; }
+}
+
+function isNew(item) {
+  return item.addedDate ? (Date.now() - new Date(item.addedDate).getTime()) < NEW_DAYS * 86400000 : false;
+}
+
+function toggleDone(cat, idx) {
+  const done = getProgress(cat);
+  const pos = done.indexOf(idx);
+  if (pos === -1) {
+    done.push(idx);
+    showToast('✓ Отмечено как пройдено');
+    haptic('success');
+    CS.set('last_cat', cat);
+    CS.set('last_title', LESSON_DATA[cat][idx].title);
+  } else {
+    done.splice(pos, 1);
+    showToast('Отметка снята');
+    haptic('light');
+  }
+  CS.set('prog_' + cat, done);
+  updateAllProgress();
+  buildLessons(cat);
+}
+
+function updateAllProgress() {
+  Object.keys(LESSON_DATA).forEach(cat => {
+    const done = getProgress(cat).length;
+    const total = LESSON_DATA[cat].length;
+    const badge = document.getElementById('badge-' + cat);
+    const hasNew = LESSON_DATA[cat].some(item => isNew(item));
+    
+    if (badge) {
+      if (hasNew) {
+        badge.textContent = done > 0 ? `● Новое · ${done}/${total}` : '● Новое';
+        badge.className = 'card-badge new-badge';
+        badge.style.display = 'block';
+      } else if (done > 0) {
+        badge.textContent = `${done}/${total}`;
+        badge.className = 'card-badge';
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    
+    const fill = document.getElementById('progress-' + cat);
+    const txt = document.getElementById('progress-text-' + cat);
+    if (fill) fill.style.width = (total > 0 ? (done / total) * 100 : 0) + '%';
+    if (txt) txt.textContent = `${done}/${total}`;
+  });
+  
+  // Continue banner
+  CS.get('last_cat', lastCat => {
+    CS.get('last_title', lastTitle => {
+      const banner = document.getElementById('continue-banner');
+      const ctitle = document.getElementById('continue-title');
+      if (lastCat && lastTitle && banner && ctitle) {
+        ctitle.textContent = lastTitle;
+        banner.style.display = 'flex';
+        banner._cat = lastCat;
+      }
+    });
+  });
+}
+
+function continueLesson() {
+  const b = document.getElementById('continue-banner');
+  if (b && b._cat) showScreen(b._cat);
+}
+
+/* BUILD LESSONS */
+function buildLessons(cat) {
+  const el = document.getElementById(cat + '-lessons');
+  if (!el) return;
+  const items = LESSON_DATA[cat];
+  const done = getProgress(cat);
+  
+  el.innerHTML = items.map((item, i) => {
+    const isDone = done.includes(i);
+    const cls = 'lesson' + (isDone ? ' done' : '');
+    const chk = isDone ? '✓' : '';
+    const _new = isNew(item);
+    
+    let right;
+    if (item.soon) right = _new ? '<span class="l-new">Новое</span>' : '<span class="l-soon">Скоро</span>';
+    else if (_new) right = '<span class="l-new">Новое</span><span class="l-chev">›</span>';
+    else right = '<span class="l-chev">›</span>';
+    
+    const href = item.url && !item.soon ? `href="${item.url}"` : 'href="#"';
+    const click = item.url && !item.soon
+      ? `onclick="openLink('${item.url}');CS.set('last_cat','${cat}');CS.set('last_title',${JSON.stringify(item.title)});updateAllProgress();return false;"`
+      : `onclick="return false;"`;
+    
+    return `
+      <div>
+        <a class="${cls}" ${href} ${click}>
+          <span class="l-num">${String(i+1).padStart(2,'0')}</span>
+          <span class="l-text">${item.title}</span>
+          ${right}
+          ${!item.soon ? `<span class="l-check" onclick="event.preventDefault();event.stopPropagation();toggleDone('${cat}',${i})">${chk}</span>` : ''}
+        </a>
+        ${!item.soon ? `
+          <div class="notes-toggle" id="nt_${cat}_${i}" onclick="toggleNote('${cat}',${i},this)">📝 заметка</div>
+          <div class="lesson-note-wrap" id="nw_${cat}_${i}">
+            <textarea class="lesson-note" id="na_${cat}_${i}" rows="3" placeholder="Запиши свой инсайт..."></textarea>
+            <div class="note-actions">
+              <button class="note-save-btn" onclick="saveNote('${cat}',${i})">Сохранить</button>
+            </div>
+            <div class="note-saved-badge" id="ns_${cat}_${i}">✓ сохранено</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+  
+  // Загружаем заметки
+  items.forEach((_, i) => {
+    if (!items[i].soon) {
+      CS.get(`note_${cat}_${i}`, val => {
+        const ta = document.getElementById(`na_${cat}_${i}`);
+        if (ta && val) ta.value = val;
+        const toggle = document.getElementById(`nt_${cat}_${i}`);
+        if (toggle && val) toggle.textContent = '📝 заметка ●';
+      });
+    }
+  });
+}
+
+function buildAllLessons() { Object.keys(LESSON_DATA).forEach(cat => buildLessons(cat)); }
+
+/* NOTES */
+function toggleNote(cat, idx, el) {
+  const wrap = document.getElementById(`nw_${cat}_${idx}`);
+  const isOpen = wrap.classList.contains('open');
+  wrap.classList.toggle('open', !isOpen);
+  el.textContent = isOpen ? '📝 заметка' : '✕ закрыть';
+  if (!isOpen) {
+    CS.get(`note_${cat}_${idx}`, val => {
+      const ta = document.getElementById(`na_${cat}_${idx}`);
+      if (ta && val) ta.value = val;
+    });
+  }
+}
+
+function saveNote(cat, idx) {
+  const ta = document.getElementById(`na_${cat}_${idx}`);
+  if (!ta) return;
+  CS.set(`note_${cat}_${idx}`, ta.value);
+  haptic('light');
+  showToast('📝 Заметка сохранена');
+  const toggle = document.getElementById(`nt_${cat}_${idx}`);
+  if (toggle) toggle.textContent = ta.value ? '📝 заметка ●' : '📝 заметка';
+  const badge = document.getElementById(`ns_${cat}_${idx}`);
+  if (badge) { badge.style.display = 'block'; setTimeout(() => badge.style.display = 'none', 2000); }
+}
+
+/* CARD OF THE DAY */
+function initCotd() {
+  const today = new Date().toDateString();
+  CS.get('cotd_date', lastDate => {
+    CS.get('cotd_idx', idx => {
+      if (lastDate !== today || idx === null) {
+        idx = Math.floor(Math.random() * COTD_DATA.length);
+        CS.set('cotd_idx', idx);
+        CS.set('cotd_date', today);
+      }
+      renderCotd(idx);
+    });
+  });
+}
+
+function renderCotd(idx) {
+  const c = COTD_DATA[idx];
+  document.getElementById('cotd-tag').textContent = `🃏 ${c.tag}`;
+  document.getElementById('cotd-icon').textContent = c.icon;
+  document.getElementById('cotd-text').textContent = c.text;
+  document.getElementById('cotd-action').textContent = c.action;
+  updateFavBtn(idx);
+}
+
+function updateFavBtn(idx) {
+  CS.get('cotd_favs', favs => {
+    favs = favs || [];
+    const saved = favs.includes(idx);
+    const btn = document.getElementById('cotd-fav');
+    const icon = document.getElementById('cotd-fav-icon');
+    const label = document.getElementById('cotd-fav-label');
+    if (!btn) return;
+    btn.classList.toggle('saved', saved);
+    icon.textContent = saved ? '♥' : '♡';
+    label.textContent = saved ? 'В избранном' : 'В избранное';
+  });
+}
+
+function toggleFavCotd() {
+  CS.get('cotd_idx', idx => {
+    CS.get('cotd_favs', favs => {
+      favs = favs || [];
+      const pos = favs.indexOf(idx);
+      if (pos === -1) { favs.push(idx); showToast('♥ Добавлено в избранное'); haptic('success'); }
+      else { favs.splice(pos, 1); showToast('Убрано из избранного'); haptic('light'); }
+      CS.set('cotd_favs', favs);
+      updateFavBtn(idx);
+    });
+  });
+}
+
+/* STREAK */
+function initStreak() {
+  const today = new Date().toDateString();
+  CS.get('streak_date', lastDate => {
+    CS.get('streak_count', streak => {
+      streak = streak || 0;
+      if (lastDate !== today) {
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        streak = (lastDate === yesterday) ? streak + 1 : 1;
+        CS.set('streak_count', streak);
+        CS.set('streak_date', today);
+      }
+      const pill = document.getElementById('status-pill');
+      const txt = document.getElementById('status-text');
+      if (streak >= 3) {
+        if (pill) pill.classList.add('streak-active');
+        if (txt) txt.textContent = `🔥 ${streak} дн.`;
+      } else {
+        if (txt) txt.textContent = 'online';
+      }
+    });
+  });
+}
+
+/* THEME TOGGLE */
+let currentTheme = 'dark';
+function toggleTheme() {
+  const themes = ['dark', 'warm', 'forest'];
+  const idx = (themes.indexOf(currentTheme) + 1) % themes.length;
+  currentTheme = themes[idx];
+  const theme = THEMES[currentTheme];
+  Object.entries(theme).forEach(([prop, val]) => {
+    document.documentElement.style.setProperty(prop, val);
+  });
+  showToast(`🎨 Тема: ${currentTheme === 'dark' ? 'Тёмная' : currentTheme === 'warm' ? 'Тёплая' : 'Лесная'}`);
+  CS.set('theme', currentTheme);
+}
+
+function loadTheme() {
+  CS.get('theme', theme => {
+    if (theme && THEMES[theme]) {
+      currentTheme = theme;
+      Object.entries(THEMES[theme]).forEach(([prop, val]) => {
+        document.documentElement.style.setProperty(prop, val);
+      });
+    }
+  });
+}
+
+/* AMBIENT TIME */
+function setAmbientByTime() {
+  const h = new Date().getHours();
+  const eyebrow = document.getElementById('eyebrow-text');
+  if (h >= 5 && h < 12) { if (eyebrow) eyebrow.textContent = 'Доброе утро'; }
+  else if (h >= 12 && h < 19) { if (eyebrow) eyebrow.textContent = 'Добрый день'; }
+  else if (h >= 19 && h < 23) { if (eyebrow) eyebrow.textContent = 'Время магии'; }
+  else { if (eyebrow) eyebrow.textContent = 'Ночные практики'; }
+}
+
+/* NAVIGATION */
+let cur = 'home', prev = 'home';
+
+function showScreen(name) {
+  if (name === cur) return;
+  const c = document.getElementById('screen-' + cur);
+  const n = document.getElementById('screen-' + name);
+  if (!c || !n) return;
+  c.classList.add('exit'); c.classList.remove('active');
+  setTimeout(() => c.classList.remove('exit'), 400);
+  n.classList.add('active'); n.scrollTop = 0;
+  prev = cur; cur = name;
+  haptic('light');
+}
+
+function goBack() { showScreen(prev === cur ? 'home' : prev); }
+
+function haptic(t) {
+  try { Telegram?.WebApp?.HapticFeedback?.impactOccurred(t === 'success' ? 'heavy' : 'light'); } catch(e) {}
+}
+
+/* OPEN LINK */
+function openLink(url) {
+  if (!url || url === '#') { haptic('light'); return; }
+  try {
+    if (url.includes('t.me') && Telegram?.WebApp?.openTelegramLink) {
+      Telegram.WebApp.openTelegramLink(url);
+    } else if (Telegram?.WebApp?.openLink) {
+      Telegram.WebApp.openLink(url, { try_instant_view: false });
+    } else {
+      window.open(url, '_blank');
+    }
+  } catch(e) { window.open(url, '_blank'); }
+}
+
+/* TOAST */
+let _toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* SCHEDULE MODAL */
+function openSchedule() {
+  buildNotebook();
+  document.getElementById('schedule-modal').classList.add('open');
+  haptic('light');
+}
+function closeSchedule() { document.getElementById('schedule-modal').classList.remove('open'); }
+function handleModalBg(e) { if (e.target === document.getElementById('schedule-modal')) closeSchedule(); }
+
+function buildNotebook() {
+  const container = document.getElementById('notebook-content');
+  if (!SCHEDULE.length) { container.innerHTML = '<div class="nb-empty">✦ Расписание<br>пока не заполнено ✦</div>'; return; }
+  const byMonth = {};
+  SCHEDULE.forEach(ev => {
+    const d = new Date(ev.date);
+    const k = `${d.getFullYear()}-${d.getMonth()}`;
+    if (!byMonth[k]) byMonth[k] = { label: MONTHS_RU[d.getMonth()] + ' ' + d.getFullYear(), events: [] };
+    byMonth[k].events.push(ev);
+  });
+  let html = '';
+  Object.values(byMonth).forEach(g => {
+    html += `<div class="nb-month"><span class="nb-month-label">${g.label}</span><span class="nb-month-line"></span></div>`;
+    g.events.forEach((ev, i) => {
+      const d = new Date(ev.date);
+      html += `<div class="nb-event" style="animation-delay:${.04*i}s">
+        <div class="nb-date-badge">
+          <span class="nb-day">${d.getDate()}</span>
+          <span class="nb-wday">${WDAYS[d.getDay()]}</span>
+        </div>
+        <div class="nb-body">
+          <div class="nb-time">🕗 ${ev.time} МСК</div>
+          <div class="nb-name">${ev.title}</div>
+          <button class="nb-zoom-link" onclick="openLink('${ev.zoom}')">🎥 Войти в Zoom</button>
+        </div>
+      </div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+
+/* NEXT BROADCAST */
+function setNextDate() {
+  const now = new Date();
+  const diff = (4 - now.getDay() + 7) % 7 || 7;
+  const next = new Date(now); next.setDate(now.getDate() + diff);
+  document.getElementById('next-date').textContent = `${next.getDate()} ${MONTHS_GEN[next.getMonth()]}`;
+}
+
+/* SWIPE BACK */
+let _sx = 0, _sy = 0;
+document.addEventListener('touchstart', e => { _sx = e.changedTouches[0].screenX; _sy = e.changedTouches[0].screenY; }, { passive:true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - _sx;
+  const dy = e.changedTouches[0].screenY - _sy;
+  if (dx > 70 && Math.abs(dx) > Math.abs(dy) * 1.5 && cur !== 'home') goBack();
+});
+
+/* INIT */
+function init() {
+  try { Telegram?.WebApp?.ready(); Telegram?.WebApp?.expand(); } catch(e) {}
+  
+  const cats = Object.keys(LESSON_DATA);
+  const progKeys = cats.map(c => 'prog_' + c);
+  const noteKeys = cats.flatMap(c => LESSON_DATA[c].map((_, i) => `note_${c}_${i}`));
+  const misc = ['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme'];
+  
+  CS.loadAll([...progKeys, ...noteKeys, ...misc], () => {
+    try {
+      const user = Telegram?.WebApp?.initDataUnsafe?.user;
+      document.getElementById('username').textContent = user?.first_name || 'Участник';
+    } catch(e) {}
+    
+    const sub = document.getElementById('greeting-sub');
+    if (sub) sub.textContent = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    
+    setAmbientByTime();
+    loadTheme();
+    initStreak();
+    initCotd();
+    buildAllLessons();
+    updateAllProgress();
+    setNextDate();
+  });
+}
+
+init();
+</script>
+
+</body>
+</html>
