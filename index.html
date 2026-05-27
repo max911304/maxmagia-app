@@ -589,10 +589,22 @@ async function loadFromSheets() {
   try {
     const sheetNames = ['schedule','sections','lessons','other','cotd','weekly'];
     const raw = {};
+
+    // Используем Promise.race вместо AbortSignal.timeout для совместимости
+    const fetchWithTimeout = (url, ms=5000) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      return fetch(url, {signal: controller.signal}).finally(() => clearTimeout(timer));
+    };
+
     await Promise.all(sheetNames.map(async name => {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${name}`;
-      const r = await fetch(url, {signal: AbortSignal.timeout(6000)});
-      if (r.ok) raw[name] = parseCSV(await r.text());
+      try {
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${name}`;
+        const r = await fetchWithTimeout(url, 5000);
+        if (r.ok) raw[name] = parseCSV(await r.text());
+      } catch(e) {
+        console.warn('Sheet load failed:', name, e.message);
+      }
     }));
 
     const data = {schedule:[],weekly:null,sections:[],lessons:{},other:[],cotd:[]};
@@ -1036,7 +1048,11 @@ document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-_s
 async function init(){
   try{Telegram?.WebApp?.ready();Telegram?.WebApp?.expand();}catch(e){}
 
-  const sheetData = await loadFromSheets();
+  // Максимум 7 секунд на загрузку таблицы, потом используем fallback
+  const sheetData = await Promise.race([
+    loadFromSheets(),
+    new Promise(resolve => setTimeout(() => resolve(null), 7000))
+  ]);
   APP_DATA = sheetData || FALLBACK;
 
   buildCards();
