@@ -586,71 +586,94 @@ function csvRow(line) {
 
 async function loadFromSheets() {
   if (!SHEET_ID || SHEET_ID==='ВСТАВЬ_ID_ТАБЛИЦЫ_СЮДА') return null;
+
+  const fetchWithTimeout = (url, ms=8000) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return fetch(url, {signal: controller.signal}).finally(() => clearTimeout(timer));
+  };
+
+  // Читаем через gviz/tq JSON — работает без CORS для публичных таблиц
+  const readSheet = async (sheetName) => {
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+      const r = await fetchWithTimeout(url);
+      if (!r.ok) return [];
+      const text = await r.text();
+      // Google возвращает ответ вида: google.visualization.Query.setResponse({...})
+      const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
+      if (!json.table || !json.table.rows) return [];
+
+      const cols = json.table.cols.map(c => (c.label || c.id || '').toLowerCase().trim());
+      return json.table.rows.map(row => {
+        const obj = {};
+        cols.forEach((col, i) => {
+          const cell = row.c && row.c[i];
+          obj[col] = cell && cell.v !== null && cell.v !== undefined ? String(cell.v).trim() : '';
+        });
+        return obj;
+      }).filter(r => Object.values(r).some(v => v));
+    } catch(e) {
+      console.warn('Sheet read failed:', sheetName, e.message);
+      return [];
+    }
+  };
+
   try {
-    const sheetNames = ['schedule','sections','lessons','other','cotd','weekly'];
-    const raw = {};
-
-    // Используем Promise.race вместо AbortSignal.timeout для совместимости
-    const fetchWithTimeout = (url, ms=5000) => {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), ms);
-      return fetch(url, {signal: controller.signal}).finally(() => clearTimeout(timer));
-    };
-
-    await Promise.all(sheetNames.map(async name => {
-      try {
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${name}`;
-        const r = await fetchWithTimeout(url, 5000);
-        if (r.ok) raw[name] = parseCSV(await r.text());
-      } catch(e) {
-        console.warn('Sheet load failed:', name, e.message);
-      }
-    }));
+    const [scheduleRows, sectionsRows, lessonsRows, otherRows, cotdRows, weeklyRows] = await Promise.all([
+      readSheet('schedule'),
+      readSheet('sections'),
+      readSheet('lessons'),
+      readSheet('other'),
+      readSheet('cotd'),
+      readSheet('weekly'),
+    ]);
 
     const data = {schedule:[],weekly:null,sections:[],lessons:{},other:[],cotd:[]};
 
-    (raw.schedule||[]).forEach(r => {
+    scheduleRows.forEach(r => {
       if(r.date&&r.title) data.schedule.push({date:r.date,time:r.time||'20:00',title:r.title,zoom:r.zoom||'https://zoom.us'});
     });
 
-    const wRow = (raw.weekly||[])[0];
-    if (wRow&&wRow.title) data.weekly = {title:wRow.title, desc:wRow.desc||'', deadline:wRow.deadline||''};
+    const wRow = weeklyRows[0];
+    if(wRow&&wRow.title) data.weekly = {title:wRow.title, desc:wRow.desc||'', deadline:wRow.deadline||''};
 
-    (raw.sections||[]).forEach(r => {
+    sectionsRows.forEach(r => {
       if(r.id&&r.name) data.sections.push({id:r.id,icon:r.icon||'📁',name:r.name,desc:r.desc||'',group:r.group||'practices'});
     });
 
-    (raw.lessons||[]).forEach(r => {
+    lessonsRows.forEach(r => {
       if(!r.section||!r.title) return;
       if(!data.lessons[r.section]) data.lessons[r.section]=[];
-      const item={title:r.title};
-      if(r.url&&r.url!=='-') item.url=r.url;
-      if(r.addedDate&&r.addedDate!=='-') item.addedDate=r.addedDate;
-      if(r.soon&&r.soon.toLowerCase()==='true') item.soon=true;
-      if(r.badge&&r.badge!=='-') item.badge=r.badge;
+      const item = {title:r.title};
+      if(r.url&&r.url!=='-'&&r.url!=='') item.url = r.url;
+      if(r.addeddate&&r.addeddate!=='-'&&r.addeddate!=='') item.addedDate = r.addeddate;
+      if(r.soon&&r.soon.toLowerCase()==='true') item.soon = true;
+      if(r.badge&&r.badge!=='-'&&r.badge!=='') item.badge = r.badge;
       data.lessons[r.section].push(item);
     });
 
-    (raw.other||[]).forEach(r => {
+    otherRows.forEach(r => {
       if(r.title&&r.url) data.other.push({icon:r.icon||'📎',title:r.title,url:r.url});
     });
 
-    (raw.cotd||[]).forEach(r => {
+    cotdRows.forEach(r => {
       if(r.text) data.cotd.push({icon:r.icon||'✦',tag:r.tag||'Практика дня',text:r.text,action:r.action||'↗ Попробовать'});
     });
 
     // Заполняем пустое из fallback
-    if(!data.schedule.length)  data.schedule  = FALLBACK.schedule;
-    if(!data.weekly)           data.weekly    = FALLBACK.weekly;
-    if(!data.sections.length)  data.sections  = FALLBACK.sections;
+    if(!data.schedule.length)  data.schedule = FALLBACK.schedule;
+    if(!data.weekly)           data.weekly   = FALLBACK.weekly;
+    if(!data.sections.length)  data.sections = FALLBACK.sections;
     if(!Object.keys(data.lessons).length) data.lessons = FALLBACK.lessons;
     FALLBACK.sections.forEach(s => { if(!data.lessons[s.id]) data.lessons[s.id] = FALLBACK.lessons[s.id]||[]; });
-    if(!data.other.length)  data.other  = FALLBACK.other;
-    if(!data.cotd.length)   data.cotd   = FALLBACK.cotd;
+    if(!data.other.length) data.other = FALLBACK.other;
+    if(!data.cotd.length)  data.cotd  = FALLBACK.cotd;
 
+    console.log('Sheets loaded ✓ sections:', data.sections.length, 'lessons keys:', Object.keys(data.lessons));
     return data;
   } catch(e) {
-    console.warn('Sheets error:', e.message);
+    console.warn('Sheets global error:', e.message);
     return null;
   }
 }
