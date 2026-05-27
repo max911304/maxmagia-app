@@ -343,6 +343,100 @@ body::after {
 .nb-zoom-link { display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, var(--gold), #9e7540); color:#08080e; font-family:var(--font-sans); font-weight:700; font-size:12px; padding:7px 14px; border-radius:8px; text-decoration:none; cursor:pointer; border:none; box-shadow:0 3px 12px rgba(200,169,110,.22); transition:all .18s; }
 .nb-zoom-link:active { transform:scale(.95); }
 .nb-empty { text-align:center; padding:48px 20px; font-family:var(--font-hand); font-size:22px; color:var(--muted); line-height:1.6; }
+
+/* ── MOOD TRACKER ── */
+.mood-bar {
+  margin:12px 16px 0; padding:12px 16px;
+  background:var(--surface); border:1px solid rgba(255,255,255,.06);
+  border-radius:var(--r-sm); position:relative; overflow:hidden;
+}
+.mood-bar::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent); }
+.mood-label { font-size:9px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
+.mood-label span { color:var(--gold); opacity:.7; cursor:pointer; font-size:10px; letter-spacing:0; }
+.mood-emojis { display:flex; justify-content:space-between; align-items:center; gap:2px; }
+.mood-btn {
+  flex:1; text-align:center; font-size:22px; padding:4px 0; border-radius:8px;
+  cursor:pointer; transition:all .15s; border:2px solid transparent;
+  background:none; line-height:1.2; position:relative;
+}
+.mood-btn:active { transform:scale(.88); }
+.mood-btn.selected { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.15); transform:scale(1.15); }
+.mood-dots { display:flex; justify-content:center; gap:4px; margin-top:8px; }
+.mood-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.1); transition:background .3s; flex-shrink:0; }
+
+/* ── WEEKLY TASK ── */
+.weekly-card {
+  margin:12px 16px 0; padding:18px 20px;
+  background:linear-gradient(135deg, rgba(80,160,120,.08), rgba(80,160,120,.02));
+  border:1px solid rgba(80,160,120,.22); border-radius:var(--r);
+  position:relative; overflow:hidden; cursor:pointer; transition:all .2s;
+}
+.weekly-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(80,200,140,.5),transparent); }
+.weekly-card:active { transform:scale(.99); }
+.wk-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.wk-tag { font-size:9px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; color:#4ec994; }
+.wk-countdown {
+  font-size:10px; font-weight:600; color:#4ec994; opacity:.7;
+  background:rgba(80,160,120,.12); border:1px solid rgba(80,160,120,.2);
+  padding:2px 8px; border-radius:8px;
+}
+.wk-title { font-family:var(--font-serif); font-size:16px; font-weight:700; color:var(--white); line-height:1.3; margin-bottom:5px; }
+.wk-desc { font-size:12px; color:var(--muted); line-height:1.5; }
+.wk-progress { margin-top:12px; display:flex; align-items:center; gap:8px; }
+.wk-prog-bar { flex:1; height:3px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden; }
+.wk-prog-fill { height:100%; background:linear-gradient(90deg,rgba(80,160,120,.4),#4ec994); border-radius:3px; transition:width .5s ease; }
+.wk-prog-text { font-size:10px; color:#4ec994; opacity:.6; font-weight:600; white-space:nowrap; }
+.wk-done-btn {
+  margin-top:12px; display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; border-radius:10px; cursor:pointer; transition:all .2s;
+  background:rgba(80,160,120,.1); border:1px solid rgba(80,160,120,.25);
+  color:#4ec994; font-family:var(--font-sans); font-size:12px; font-weight:600;
+}
+.wk-done-btn.done { background:rgba(80,160,120,.2); border-color:rgba(80,160,120,.4); }
+.wk-done-btn:active { transform:scale(.96); }
+
+/* ── MOOD HISTORY MODAL ── */
+.mood-modal-body { padding:16px; position:relative; z-index:1; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch; }
+.mood-chart { display:flex; align-items:flex-end; gap:5px; height:80px; margin-bottom:12px; }
+.mood-bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.mood-bar-fill { width:100%; border-radius:4px 4px 0 0; background:var(--gold); opacity:.5; transition:height .4s ease, opacity .3s; min-height:4px; }
+.mood-bar-fill.today { opacity:.9; }
+.mood-bar-date { font-size:8px; color:var(--muted); text-align:center; }
+.mood-bar-emoji { font-size:12px; text-align:center; }
+.mood-avg { text-align:center; margin-top:8px; font-family:var(--font-hand); font-size:18px; color:var(--gold); opacity:.8; }
+.mood-history-list { display:flex; flex-direction:column; gap:6px; margin-top:16px; }
+.mood-hist-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--surface); border-radius:var(--r-sm); }
+.mood-hist-emoji { font-size:22px; flex-shrink:0; }
+.mood-hist-info { flex:1; }
+.mood-hist-date { font-size:11px; color:var(--muted); }
+.mood-hist-label { font-size:13px; color:var(--white); opacity:.85; margin-top:1px; }
+
+/* ── NOTIFY MODAL ── */
+.notify-body { padding:20px; position:relative; z-index:1; }
+.notify-title { font-family:var(--font-serif); font-size:18px; font-weight:700; color:var(--white); margin-bottom:5px; }
+.notify-sub { font-size:12px; color:var(--muted); margin-bottom:20px; line-height:1.5; }
+.notify-options { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.notify-opt {
+  display:flex; align-items:center; gap:14px; padding:14px 16px;
+  background:var(--surface); border:1px solid rgba(255,255,255,.07);
+  border-radius:var(--r-sm); cursor:pointer; transition:all .18s;
+}
+.notify-opt:active { background:var(--surface-hover); }
+.notify-opt.active { border-color:var(--gold-border); background:var(--gold-lo); }
+.notify-opt-icon { font-size:22px; flex-shrink:0; }
+.notify-opt-body { flex:1; }
+.notify-opt-title { font-size:14px; font-weight:500; color:var(--white); }
+.notify-opt-sub { font-size:11px; color:var(--muted); margin-top:1px; }
+.notify-opt-check { font-size:16px; color:var(--gold); opacity:0; transition:opacity .2s; }
+.notify-opt.active .notify-opt-check { opacity:1; }
+.notify-save-btn {
+  width:100%; padding:14px; border:none; border-radius:var(--r-sm); cursor:pointer;
+  background:linear-gradient(135deg, var(--gold), #9e7540);
+  color:#08080e; font-family:var(--font-sans); font-weight:700; font-size:14px;
+  box-shadow:0 4px 16px rgba(200,169,110,.25); transition:all .18s;
+}
+.notify-save-btn:active { transform:scale(.98); }
+
 </style>
 
 </head>
@@ -360,13 +454,38 @@ body::after {
         <div class="header-name">Привет, <span id="username">Участник</span></div>
         <div class="header-greeting" id="greeting-sub"></div>
       </div>
-      <div class="status-pill" id="status-pill" onclick="toggleTheme()">
-        <div class="status-dot"></div>
-        <span class="status-text" id="status-text">online</span>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="status-pill" id="status-pill" onclick="toggleTheme()">
+          <div class="status-dot"></div>
+          <span class="status-text" id="status-text">online</span>
+        </div>
+        <div onclick="openNotifyModal()" style="font-size:18px;cursor:pointer;opacity:.5;transition:opacity .2s" id="notify-bell" title="Напоминания">🔔</div>
       </div>
     </div>
   </div>
   <div class="hairline"></div>
+
+  <!-- MOOD TRACKER -->
+  <div class="mood-bar">
+    <div class="mood-label">
+      Как ты сейчас?
+      <span onclick="openMoodHistory()">📊 история</span>
+    </div>
+    <div class="mood-emojis" id="mood-emojis">
+      <button class="mood-btn" data-idx="0"  onclick="saveMood(0)"  title="Ужас">😱</button>
+      <button class="mood-btn" data-idx="1"  onclick="saveMood(1)"  title="Злость">😡</button>
+      <button class="mood-btn" data-idx="2"  onclick="saveMood(2)"  title="Грусть">😢</button>
+      <button class="mood-btn" data-idx="3"  onclick="saveMood(3)"  title="Не очень">☹️</button>
+      <button class="mood-btn" data-idx="4"  onclick="saveMood(4)"  title="Нейтрально">😐</button>
+      <button class="mood-btn" data-idx="5"  onclick="saveMood(5)"  title="Спокойно">😌</button>
+      <button class="mood-btn" data-idx="6"  onclick="saveMood(6)"  title="Хорошо">😊</button>
+      <button class="mood-btn" data-idx="7"  onclick="saveMood(7)"  title="Весело">😜</button>
+      <button class="mood-btn" data-idx="8"  onclick="saveMood(8)"  title="Отлично">🥳</button>
+      <button class="mood-btn" data-idx="9"  onclick="saveMood(9)"  title="Любовь">🥰</button>
+      <button class="mood-btn" data-idx="10" onclick="saveMood(10)" title="Огонь">🔥</button>
+    </div>
+    <div class="mood-dots" id="mood-dots"></div>
+  </div>
 
   <div class="broadcast-card">
     <span class="bc-tag">⚡ Ближайший эфир</span>
@@ -383,6 +502,23 @@ body::after {
     <button class="action-btn" onclick="openSchedule()">
       <span class="action-btn-icon">📅</span>
       <span class="action-btn-label">Расписание<br>встреч</span>
+    </button>
+  </div>
+
+  <!-- WEEKLY TASK -->
+  <div class="weekly-card" id="weekly-card" onclick="toggleWeeklyDone()">
+    <div class="wk-top">
+      <span class="wk-tag">🎯 Задание недели</span>
+      <span class="wk-countdown" id="wk-countdown">...</span>
+    </div>
+    <div class="wk-title" id="wk-title">Загружаем задание...</div>
+    <div class="wk-desc" id="wk-desc"></div>
+    <div class="wk-progress">
+      <div class="wk-prog-bar"><div class="wk-prog-fill" id="wk-fill" style="width:0%"></div></div>
+      <span class="wk-prog-text" id="wk-prog-text">0% участников выполнили</span>
+    </div>
+    <button class="wk-done-btn" id="wk-done-btn" onclick="event.stopPropagation();toggleWeeklyDone()">
+      <span id="wk-done-icon">○</span> <span id="wk-done-label">Отметить как выполнено</span>
     </button>
   </div>
 
@@ -457,18 +593,18 @@ body::after {
       <span class="card-badge" id="badge-ai"></span>
       <div class="card-arrow">›</div>
     </div>
-    <div class="card" onclick="showScreen('myai')" style="animation-delay:.19s">
-      <div class="card-icon">🧠</div>
-      <div class="card-name">Мои AI решения</div>
-      <div class="card-desc">Авторские GPT и Claude-боты</div>
-      <span class="card-badge" id="badge-myai"></span>
-      <div class="card-arrow">›</div>
-    </div>
-    <div class="card" onclick="showScreen('archive')" style="animation-delay:.21s">
+    <div class="card" onclick="showScreen('archive')" style="animation-delay:.19s">
       <div class="card-icon">📼</div>
       <div class="card-name">AMA Сессии</div>
       <div class="card-desc">Архив записей прошлого</div>
       <span class="card-badge" id="badge-archive"></span>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card" onclick="showScreen('myai')" style="animation-delay:.21s">
+      <div class="card-icon">🧠</div>
+      <div class="card-name">Мои AI решения</div>
+      <div class="card-desc">Авторские GPT и Claude-боты</div>
+      <span class="card-badge" id="badge-myai"></span>
       <div class="card-arrow">›</div>
     </div>
     <div class="card" onclick="showScreen('records')" style="animation-delay:.23s">
@@ -1196,6 +1332,259 @@ document.addEventListener('touchend', e => {
   if (dx > 70 && Math.abs(dx) > Math.abs(dy) * 1.5 && cur !== 'home') goBack();
 });
 
+/* ═══════════════════════════════════════════
+   WEEKLY TASK DATA
+   Редактируй здесь — title, desc, deadline (YYYY-MM-DD)
+   Каждую неделю меняй на новое задание
+═══════════════════════════════════════════ */
+const WEEKLY_TASK = {
+  title: 'Практика осознанного дыхания',
+  desc:  'Каждый день этой недели делай упражнение 4-7-8: вдох 4 счёта, задержка 7, выдох 8. Три цикла утром и вечером.',
+  deadline: '2026-06-01',
+};
+
+/* EMOJI MAP для настроения */
+const MOOD_EMOJIS  = ['😱','😡','😢','☹️','😐','😌','😊','😜','🥳','🥰','🔥'];
+const MOOD_LABELS  = ['Ужас','Злость','Грусть','Не очень','Нейтрально','Спокойно','Хорошо','Весело','Отлично','Любовь','Огонь'];
+
+/* ─────────────────────────────────────────
+   1. ТРЕКЕР НАСТРОЕНИЯ
+───────────────────────────────────────── */
+function saveMood(idx) {
+  const today = new Date().toDateString();
+  const key   = 'mood_' + today;
+  CS.set(key, idx);
+  // Обновляем визуал
+  document.querySelectorAll('.mood-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i === idx);
+  });
+  showToast(`${MOOD_EMOJIS[idx]} Настроение сохранено`);
+  haptic('success');
+  renderMoodDots();
+}
+
+function renderMoodDots() {
+  const dots = document.getElementById('mood-dots');
+  if (!dots) return;
+  // Показываем последние 7 дней
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toDateString());
+  }
+  // Собираем данные из кэша
+  const vals = days.map(d => {
+    const raw = CS._c['mood_' + d];
+    return raw !== undefined ? JSON.parse(raw) : null;
+  });
+  dots.innerHTML = vals.map(v => {
+    if (v === null) return `<div class="mood-dot" style="background:rgba(255,255,255,.08)"></div>`;
+    // Цвет от красного (0) до зелёного (10)
+    const hue = Math.round((v / 10) * 120);
+    return `<div class="mood-dot" style="background:hsl(${hue},65%,55%);box-shadow:0 0 4px hsl(${hue},65%,55%)"></div>`;
+  }).join('');
+}
+
+function loadTodayMood() {
+  const today = new Date().toDateString();
+  CS.get('mood_' + today, val => {
+    if (val !== null && val !== undefined) {
+      document.querySelectorAll('.mood-btn').forEach((btn, i) => {
+        btn.classList.toggle('selected', i === val);
+      });
+    }
+    renderMoodDots();
+  });
+}
+
+function openMoodHistory() {
+  const body = document.getElementById('mood-modal-body');
+  // Собираем 14 дней
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push({ date: d, key: d.toDateString() });
+  }
+  const vals = days.map(d => {
+    const raw = CS._c['mood_' + d.key];
+    return raw !== undefined ? JSON.parse(raw) : null;
+  });
+  const filled = vals.filter(v => v !== null);
+  const avg    = filled.length ? Math.round(filled.reduce((a,b)=>a+b,0)/filled.length) : null;
+
+  // Бар-чарт
+  let chartHtml = '<div class="mood-chart">';
+  days.forEach((d, i) => {
+    const v   = vals[i];
+    const pct = v !== null ? Math.round((v / 10) * 100) : 0;
+    const hue = v !== null ? Math.round((v/10)*120) : 0;
+    const isToday = i === 13;
+    const dayName = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][d.date.getDay()];
+    chartHtml += `<div class="mood-bar-col">
+      <div class="mood-bar-emoji">${v !== null ? MOOD_EMOJIS[v] : '·'}</div>
+      <div class="mood-bar-fill ${isToday?'today':''}" style="height:${pct}%;background:hsl(${hue},60%,55%)"></div>
+      <div class="mood-bar-date">${dayName}</div>
+    </div>`;
+  });
+  chartHtml += '</div>';
+  if (avg !== null) chartHtml += `<div class="mood-avg">Среднее за 2 недели: ${MOOD_EMOJIS[avg]} ${MOOD_LABELS[avg]}</div>`;
+
+  // История списком (последние 7 заполненных)
+  let listHtml = '<div class="mood-history-list">';
+  [...days].reverse().forEach(d => {
+    const raw = CS._c['mood_' + d.key];
+    if (raw === undefined) return;
+    const v = JSON.parse(raw);
+    const hue = Math.round((v/10)*120);
+    listHtml += `<div class="mood-hist-item">
+      <span class="mood-hist-emoji">${MOOD_EMOJIS[v]}</span>
+      <div class="mood-hist-info">
+        <div class="mood-hist-date">${d.date.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})}</div>
+        <div class="mood-hist-label">${MOOD_LABELS[v]}</div>
+      </div>
+    </div>`;
+  });
+  listHtml += '</div>';
+
+  body.innerHTML = chartHtml + listHtml;
+  document.getElementById('mood-modal').classList.add('open');
+  haptic('light');
+}
+function closeMoodHistory()      { document.getElementById('mood-modal').classList.remove('open'); }
+function handleMoodModalBg(e)    { if (e.target === document.getElementById('mood-modal')) closeMoodHistory(); }
+
+/* ─────────────────────────────────────────
+   2. ЗАДАНИЕ НЕДЕЛИ
+───────────────────────────────────────── */
+function initWeeklyTask() {
+  const titleEl   = document.getElementById('wk-title');
+  const descEl    = document.getElementById('wk-desc');
+  const countEl   = document.getElementById('wk-countdown');
+  const fillEl    = document.getElementById('wk-fill');
+  const progEl    = document.getElementById('wk-prog-text');
+
+  if (titleEl) titleEl.textContent = WEEKLY_TASK.title;
+  if (descEl)  descEl.textContent  = WEEKLY_TASK.desc;
+
+  // Обратный отсчёт
+  if (countEl && WEEKLY_TASK.deadline) {
+    const diff = Math.ceil((new Date(WEEKLY_TASK.deadline) - new Date()) / 86400000);
+    countEl.textContent = diff > 0 ? `⏳ ${diff} дн.` : '⌛ Завершено';
+  }
+
+  // Прогресс-бар — считаем % выполнивших (из CloudStorage всех — упрощённо хранится счётчик)
+  CS.get('weekly_done_count', count => {
+    count = count || 0;
+    const pct = Math.min(count * 8, 92); // примерно: каждый участник += ~8%
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (progEl) progEl.textContent = count > 0 ? `${count} участников выполнили` : 'Будь первым!';
+  });
+
+  // Статус текущего пользователя
+  CS.get('weekly_task_id', savedId => {
+    const taskId = WEEKLY_TASK.deadline; // используем дедлайн как ID задания
+    if (savedId === taskId) {
+      setWeeklyDoneUI(true);
+    }
+  });
+}
+
+function toggleWeeklyDone() {
+  const taskId = WEEKLY_TASK.deadline;
+  CS.get('weekly_task_id', savedId => {
+    if (savedId === taskId) {
+      // Снять отметку
+      CS.set('weekly_task_id', null);
+      CS.get('weekly_done_count', c => CS.set('weekly_done_count', Math.max(0, (c||0)-1)));
+      setWeeklyDoneUI(false);
+      showToast('Отметка снята');
+    } else {
+      // Отметить
+      CS.set('weekly_task_id', taskId);
+      CS.get('weekly_done_count', c => {
+        const newCount = (c||0)+1;
+        CS.set('weekly_done_count', newCount);
+        const pct = Math.min(newCount * 8, 92);
+        const f = document.getElementById('wk-fill');
+        const p = document.getElementById('wk-prog-text');
+        if (f) f.style.width = pct + '%';
+        if (p) p.textContent = `${newCount} участников выполнили`;
+      });
+      setWeeklyDoneUI(true);
+      showToast('🎯 Задание выполнено! Так держать!');
+      haptic('success');
+    }
+  });
+}
+
+function setWeeklyDoneUI(done) {
+  const btn      = document.getElementById('wk-done-btn');
+  const icon     = document.getElementById('wk-done-icon');
+  const label    = document.getElementById('wk-done-label');
+  const card     = document.getElementById('weekly-card');
+  if (!btn) return;
+  btn.classList.toggle('done', done);
+  if (icon)  icon.textContent  = done ? '✓' : '○';
+  if (label) label.textContent = done ? 'Выполнено ✓' : 'Отметить как выполнено';
+  if (card && done) card.style.borderColor = 'rgba(80,200,140,.4)';
+  else if (card)    card.style.borderColor = '';
+}
+
+/* ─────────────────────────────────────────
+   3. НАПОМИНАНИЯ
+───────────────────────────────────────── */
+let selectedNotifyTime = 'off';
+
+function openNotifyModal() {
+  CS.get('notify_time', t => {
+    selectedNotifyTime = t || 'off';
+    updateNotifyUI();
+    document.getElementById('notify-modal').classList.add('open');
+    haptic('light');
+  });
+}
+function closeNotifyModal()      { document.getElementById('notify-modal').classList.remove('open'); }
+function handleNotifyModalBg(e)  { if (e.target === document.getElementById('notify-modal')) closeNotifyModal(); }
+
+function selectNotify(time) {
+  selectedNotifyTime = time;
+  updateNotifyUI();
+}
+
+function updateNotifyUI() {
+  document.querySelectorAll('.notify-opt').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.time === selectedNotifyTime);
+  });
+  // Подсвечиваем колокольчик если включено
+  const bell = document.getElementById('notify-bell');
+  if (bell) bell.style.opacity = selectedNotifyTime !== 'off' ? '1' : '.5';
+}
+
+function saveNotifySettings() {
+  CS.set('notify_time', selectedNotifyTime);
+  closeNotifyModal();
+  if (selectedNotifyTime === 'off') {
+    showToast('🔕 Напоминания выключены');
+  } else {
+    showToast(`🔔 Напоминания в ${selectedNotifyTime} сохранены`);
+    // Отправляем в Telegram данные через sendData чтобы бот подписал пользователя
+    try {
+      Telegram?.WebApp?.sendData(JSON.stringify({
+        action: 'set_reminder',
+        time:   selectedNotifyTime,
+      }));
+    } catch(e) {}
+  }
+  haptic('success');
+}
+
+function initNotifyBell() {
+  CS.get('notify_time', t => {
+    const bell = document.getElementById('notify-bell');
+    if (bell) bell.style.opacity = (t && t !== 'off') ? '1' : '.5';
+  });
+}
+
 /* INIT */
 function init() {
   try { Telegram?.WebApp?.ready(); Telegram?.WebApp?.expand(); } catch(e) {}
@@ -1203,9 +1592,10 @@ function init() {
   const cats = Object.keys(LESSON_DATA);
   const progKeys = cats.map(c => 'prog_' + c);
   const noteKeys = cats.flatMap(c => LESSON_DATA[c].map((_, i) => `note_${c}_${i}`));
-  const misc = ['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme'];
+  const moodKeys = Array.from({length:14}, (_,i) => { const d=new Date(); d.setDate(d.getDate()-i); return 'mood_'+d.toDateString(); });
+  const misc = ['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
   
-  CS.loadAll([...progKeys, ...noteKeys, ...misc], () => {
+  CS.loadAll([...progKeys, ...noteKeys, ...moodKeys, ...misc], () => {
     try {
       const user = Telegram?.WebApp?.initDataUnsafe?.user;
       document.getElementById('username').textContent = user?.first_name || 'Участник';
@@ -1221,11 +1611,82 @@ function init() {
     buildAllLessons();
     updateAllProgress();
     setNextDate();
+    loadTodayMood();    // ← новое
+    initWeeklyTask();   // ← новое
+    initNotifyBell();   // ← новое
   });
 }
 
 init();
 </script>
+
+<!-- MOOD HISTORY MODAL -->
+<div class="modal-overlay" id="mood-modal" onclick="handleMoodModalBg(event)">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <span class="modal-notebook-icon">📊</span>
+        <div><div class="modal-title">Настроение</div><div class="modal-subtitle">Твоя динамика за 14 дней</div></div>
+      </div>
+      <button class="modal-close" onclick="closeMoodHistory()">✕</button>
+    </div>
+    <div class="mood-modal-body" id="mood-modal-body"></div>
+  </div>
+</div>
+
+<!-- NOTIFY MODAL -->
+<div class="modal-overlay" id="notify-modal" onclick="handleNotifyModalBg(event)">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <span class="modal-notebook-icon">🔔</span>
+        <div><div class="modal-title">Напоминания</div><div class="modal-subtitle">Карта дня + задание недели</div></div>
+      </div>
+      <button class="modal-close" onclick="closeNotifyModal()">✕</button>
+    </div>
+    <div class="notify-body">
+      <div class="notify-title">Когда присылать?</div>
+      <div class="notify-sub">Бот будет отправлять тебе карту дня и задание недели в выбранное время каждый день.</div>
+      <div class="notify-options" id="notify-options">
+        <div class="notify-opt" data-time="off" onclick="selectNotify('off')">
+          <span class="notify-opt-icon">🔕</span>
+          <div class="notify-opt-body">
+            <div class="notify-opt-title">Выключено</div>
+            <div class="notify-opt-sub">Не присылать напоминания</div>
+          </div>
+          <span class="notify-opt-check">✓</span>
+        </div>
+        <div class="notify-opt" data-time="08:00" onclick="selectNotify('08:00')">
+          <span class="notify-opt-icon">🌅</span>
+          <div class="notify-opt-body">
+            <div class="notify-opt-title">Утро — 8:00</div>
+            <div class="notify-opt-sub">Начни день с практики</div>
+          </div>
+          <span class="notify-opt-check">✓</span>
+        </div>
+        <div class="notify-opt" data-time="12:00" onclick="selectNotify('12:00')">
+          <span class="notify-opt-icon">☀️</span>
+          <div class="notify-opt-body">
+            <div class="notify-opt-title">День — 12:00</div>
+            <div class="notify-opt-sub">Перезагрузка в середине дня</div>
+          </div>
+          <span class="notify-opt-check">✓</span>
+        </div>
+        <div class="notify-opt" data-time="20:00" onclick="selectNotify('20:00')">
+          <span class="notify-opt-icon">🌙</span>
+          <div class="notify-opt-body">
+            <div class="notify-opt-title">Вечер — 20:00</div>
+            <div class="notify-opt-sub">Подведи итог дня</div>
+          </div>
+          <span class="notify-opt-check">✓</span>
+        </div>
+      </div>
+      <button class="notify-save-btn" onclick="saveNotifySettings()">Сохранить</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
