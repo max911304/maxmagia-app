@@ -457,14 +457,28 @@ body::after {
       <span class="card-badge" id="badge-ai"></span>
       <div class="card-arrow">›</div>
     </div>
-    <div class="card" onclick="showScreen('archive')" style="animation-delay:.20s">
+    <div class="card" onclick="showScreen('myai')" style="animation-delay:.19s">
+      <div class="card-icon">🧠</div>
+      <div class="card-name">Мои AI решения</div>
+      <div class="card-desc">Авторские GPT и Claude-боты</div>
+      <span class="card-badge" id="badge-myai"></span>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card" onclick="showScreen('archive')" style="animation-delay:.21s">
       <div class="card-icon">📼</div>
       <div class="card-name">AMA Сессии</div>
       <div class="card-desc">Архив записей прошлого</div>
       <span class="card-badge" id="badge-archive"></span>
       <div class="card-arrow">›</div>
     </div>
-    <div class="card card-full" onclick="showScreen('other')" style="animation-delay:.23s">
+    <div class="card" onclick="showScreen('records')" style="animation-delay:.23s">
+      <div class="card-icon">🎬</div>
+      <div class="card-name">Записи</div>
+      <div class="card-desc">Курсы и записи встреч</div>
+      <span class="card-badge" id="badge-records"></span>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card card-full" onclick="showScreen('other')" style="animation-delay:.26s">
       <div class="card-icon">📦</div>
       <div class="card-body"><div class="card-name">Прочее</div><div class="card-desc">Книги, разминки, здоровье</div></div>
       <div class="card-arrow">›</div>
@@ -573,6 +587,34 @@ body::after {
   <div class="lessons" id="archive-lessons"></div>
 </div>
 
+<!-- МОИ AI РЕШЕНИЯ -->
+<div class="screen" id="screen-myai">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">🧠</div><div class="sp-title">Мои AI решения</div>
+    <div class="sp-desc">Авторские GPT и Claude-боты</div>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-bar"><div class="sp-progress-fill" id="progress-myai" style="width:0%"></div></div>
+      <span class="sp-progress-text" id="progress-text-myai">0/13</span>
+    </div>
+  </div>
+  <div class="lessons" id="myai-lessons"></div>
+</div>
+
+<!-- ЗАПИСИ -->
+<div class="screen" id="screen-records">
+  <div class="subpage-header">
+    <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
+    <div class="sp-icon">🎬</div><div class="sp-title">Записи</div>
+    <div class="sp-desc">Курсы и записи встреч</div>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-bar"><div class="sp-progress-fill" id="progress-records" style="width:0%"></div></div>
+      <span class="sp-progress-text" id="progress-text-records">0/6</span>
+    </div>
+  </div>
+  <div class="lessons" id="records-lessons"></div>
+</div>
+
 <!-- OTHER -->
 <div class="screen" id="screen-other">
   <div class="subpage-header">
@@ -665,6 +707,29 @@ const LESSON_DATA = {
   ],
   archive: [
     { title:'AMA Сессии — открыть архив', url:'https://t.me/c/3955955328/13', addedDate:'2026-05-22' },
+  ],
+  myai: [
+    { title:'ARCETYPE.AI', url:'https://chatgpt.com/g/g-67fe425adcec8191ad98c046c59bba89-archetype-ai', addedDate:'2026-05-27', badge:'ChatGPT' },
+    { title:'Money-Archetype.AI', url:null },
+    { title:'Поговори с ...', url:null },
+    { title:'Раскрутки убеждений фокусами языка', url:null },
+    { title:'Копирайтер Новосельцев', url:null, badge:'Claude' },
+    { title:'ИИ маркетолог', url:null, badge:'Claude' },
+    { title:'Vasyan', url:null, badge:'ChatGPT' },
+    { title:'MARVELON', url:null, badge:'ChatGPT' },
+    { title:'Архитектор будущего', url:null, badge:'Claude' },
+    { title:'Милтон Эриксон AI', url:null, badge:'ChatGPT' },
+    { title:'Френк Фаррелли AI', url:null, badge:'ChatGPT' },
+    { title:'Внушай и не ведись AI', url:null, badge:'Claude' },
+    { title:'Вирджиния Сатир AI', soon:true },
+  ],
+  records: [
+    { title:'Найди нужный тебе курс в складчине', url:null },
+    { title:'Дмитрий Новосельцев — Копирайтинг как основа управления поведением человека', url:null },
+    { title:'Дмитрий Новосельцев — ГСА', url:null },
+    { title:'ИИ. Успевать всё', url:null },
+    { title:'ИИ. Создай сказку для своего малыша', url:null },
+    { title:'Разминки', url:'https://t.me/c/3955955328/31' },
   ],
 };
 
@@ -846,6 +911,10 @@ function buildLessons(cat) {
     let right;
     if (item.soon) right = _new ? '<span class="l-new">Новое</span>' : '<span class="l-soon">Скоро</span>';
     else if (_new) right = '<span class="l-new">Новое</span><span class="l-chev">›</span>';
+    else if (item.badge) {
+      const badgeColor = item.badge === 'Claude' ? 'rgba(200,140,80,.9)' : 'rgba(80,160,100,.9)';
+      right = `<span class="l-soon" style="background:rgba(0,0,0,.15);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:9px">${item.badge}</span><span class="l-chev">›</span>`;
+    }
     else right = '<span class="l-chev">›</span>';
     
     const href = item.url && !item.soon ? `href="${item.url}"` : 'href="#"';
