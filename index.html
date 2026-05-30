@@ -1113,47 +1113,75 @@ function forceHideLoader(){
 async function init(){
   try{Telegram?.WebApp?.ready();Telegram?.WebApp?.expand();}catch(e){}
 
-  // Аварийный таймаут: через 12 секунд скрываем лоадер при любом раскладе
+  // Аварийный таймаут: через 12 секунд показываем fallback при любом раскладе
   const emergencyTimer = setTimeout(()=>{
     if(!APP_DATA) APP_DATA = FALLBACK;
     try{ buildCards(); buildScreens(); buildOther(); }catch(e){}
     forceHideLoader();
   }, 12000);
 
-  // Таблица: ждём до 10 секунд (мобильный интернет медленнее)
-  const sheetData = await Promise.race([
-    loadFromSheets(),
-    new Promise(resolve => setTimeout(() => resolve(null), 10000))
-  ]);
-  APP_DATA = sheetData || FALLBACK;
+  // ── ШАГ 1: Сначала загружаем пользовательские данные из localStorage/CloudStorage
+  // Это быстро (~100ms) и позволяет сразу показать прогресс уроков, настроение и т.д.
+  const cats_pre = FALLBACK.sections.map(s=>s.id);
+  const progKeys = cats_pre.map(c=>'prog_'+c);
+  const noteKeys = cats_pre.flatMap(c=>(FALLBACK.lessons[c]||[]).map((_,i)=>`note_${c}_${i}`));
+  const moodKeys = Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return'mood_'+d.toDateString();});
+  const misc = ['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
 
-  buildCards();
-  buildScreens();
-  buildOther();
-
-  const cats=(APP_DATA.sections||[]).map(s=>s.id);
-  const progKeys=cats.map(c=>'prog_'+c);
-  const noteKeys=cats.flatMap(c=>(APP_DATA.lessons[c]||[]).map((_,i)=>`note_${c}_${i}`));
-  const moodKeys=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return'mood_'+d.toDateString();});
-  const misc=['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
-
-  // Таймаут и на CS.loadAll — если CloudStorage тормозит, не ждём вечно
-  const allKeys=[...progKeys,...noteKeys,...moodKeys,...misc];
-  let csTimer;
-  const csPromise = new Promise(resolve=>{
-    csTimer = setTimeout(resolve, 5000); // максимум 5 сек на чтение из CloudStorage
-    CS.loadAll(allKeys, resolve);
+  let csTimer1;
+  await new Promise(resolve=>{
+    csTimer1 = setTimeout(resolve, 3000);
+    CS.loadAll([...progKeys,...noteKeys,...moodKeys,...misc], ()=>{ clearTimeout(csTimer1); resolve(); });
   });
-  await csPromise;
-  clearTimeout(csTimer);
-  clearTimeout(emergencyTimer);
+
+  // ── ШАГ 2: Загружаем таблицу (свежие данные контента)
+  // Используем FALLBACK пока таблица грузится — сразу показываем интерфейс
+  APP_DATA = FALLBACK;
+  buildCards(); buildScreens(); buildOther();
 
   try{const user=Telegram?.WebApp?.initDataUnsafe?.user;document.getElementById('username').textContent=user?.first_name||'Участник';}catch(e){}
   const sub=document.getElementById('greeting-sub');if(sub)sub.textContent=GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
   setAmbientByTime();loadTheme();initStreak();initCotd();
   buildAllLessons();updateAllProgress();setNextDate();
   loadTodayMood();initWeeklyTask();initNotifyBell();
-  setTimeout(()=>forceHideLoader(), 400);
+
+  // Скрываем лоадер сразу — пользователь видит интерфейс
+  clearTimeout(emergencyTimer);
+  setTimeout(()=>forceHideLoader(), 300);
+
+  // ── ШАГ 3: В фоне грузим таблицу и ОБНОВЛЯЕМ данные без перезагрузки страницы
+  // Таймаут 12 секунд — мобильный интернет бывает медленным
+  const sheetData = await Promise.race([
+    loadFromSheets(),
+    new Promise(resolve => setTimeout(() => resolve(null), 12000))
+  ]);
+
+  if(sheetData){
+    const wasUsingFallback = (APP_DATA === FALLBACK);
+    APP_DATA = sheetData;
+
+    // Перерисовываем только динамический контент — карточки не трогаем если секции не изменились
+    const sectionsChanged = JSON.stringify(sheetData.sections.map(s=>s.id)) !==
+                            JSON.stringify(FALLBACK.sections.map(s=>s.id));
+    if(sectionsChanged){
+      document.getElementById('cards-practices').innerHTML='';
+      document.getElementById('cards-tools').innerHTML='';
+      document.getElementById('dynamic-screens').innerHTML='';
+      buildCards(); buildScreens();
+    }
+    buildOther();
+    buildAllLessons();
+    updateAllProgress();
+
+    // Обновляем виджеты с актуальными данными из таблицы
+    setNextDate();      // расписание
+    initWeeklyTask();   // задание недели
+    initCotd();         // карта дня
+
+    if(!wasUsingFallback) console.log('✓ Данные таблицы обновлены');
+  } else {
+    console.warn('Таблица недоступна — используются сохранённые данные');
+  }
 }
 
 init();
