@@ -681,26 +681,54 @@ async function loadFromSheets() {
 
 /* ═══════════════════════════════════════════════════════
    CLOUD STORAGE
+   Три слоя надёжности:
+   1. _c  — кеш в памяти (мгновенно)
+   2. localStorage — постоянное хранилище на устройстве
+   3. Telegram CloudStorage — облако (синхронизация)
+   Запись идёт во все. Чтение: кеш → CloudStorage → localStorage.
 ═══════════════════════════════════════════════════════ */
+const LS = {
+  get(k){ try{ return localStorage.getItem('mm_'+k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem('mm_'+k,v); }catch(e){} },
+};
+
 const CS = {
   _c:{}, _p:{},
-  set(k,v){ const s=JSON.stringify(v); this._c[k]=s; try{ if(Telegram?.WebApp?.CloudStorage) Telegram.WebApp.CloudStorage.setItem(k,s,()=>{}); else sessionStorage.setItem('mm_'+k,s); }catch(e){} },
+  set(k,v){
+    const s=JSON.stringify(v);
+    this._c[k]=s;
+    LS.set(k,s);
+    try{ if(Telegram?.WebApp?.CloudStorage) Telegram.WebApp.CloudStorage.setItem(k,s,()=>{}); }catch(e){}
+  },
   get(k,cb){
-    if(this._c[k]!==undefined){try{cb(JSON.parse(this._c[k]))}catch(e){cb(null)}return}
+    if(this._c[k]!==undefined){ try{cb(JSON.parse(this._c[k]))}catch(e){cb(null)} return; }
     try{
       if(Telegram?.WebApp?.CloudStorage){
-        if(this._p[k]){this._p[k].push(cb);return}
+        if(this._p[k]){ this._p[k].push(cb); return; }
         this._p[k]=[cb];
         Telegram.WebApp.CloudStorage.getItem(k,(err,val)=>{
-          const cbs=this._p[k];delete this._p[k];
-          if(!err&&val){this._c[k]=val;cbs.forEach(c=>{try{c(JSON.parse(val))}catch(e){c(null)}})}
-          else cbs.forEach(c=>c(null));
+          const cbs=this._p[k]; delete this._p[k];
+          if(!err && val){
+            this._c[k]=val;
+            LS.set(k,val);
+            cbs.forEach(c=>{ try{c(JSON.parse(val))}catch(e){c(null)} });
+          } else {
+            const local=LS.get(k);
+            if(local){
+              this._c[k]=local;
+              try{ Telegram.WebApp.CloudStorage.setItem(k,local,()=>{}); }catch(e){}
+              cbs.forEach(c=>{ try{c(JSON.parse(local))}catch(e){c(null)} });
+            } else {
+              cbs.forEach(c=>c(null));
+            }
+          }
         });
       } else {
-        const val=sessionStorage.getItem('mm_'+k);
-        if(val){this._c[k]=val;try{cb(JSON.parse(val))}catch(e){cb(null)}}else cb(null);
+        const val=LS.get(k);
+        if(val){ this._c[k]=val; try{cb(JSON.parse(val))}catch(e){cb(null)} }
+        else cb(null);
       }
-    }catch(e){cb(null)}
+    }catch(e){ cb(null); }
   },
   loadAll(keys,cb){ let p=keys.length; if(!p){cb();return} keys.forEach(k=>this.get(k,()=>{if(--p===0)cb()})); },
 };
@@ -944,6 +972,12 @@ function closeMoodHistory(){document.getElementById('mood-modal').classList.remo
 function handleMoodModalBg(e){if(e.target===document.getElementById('mood-modal'))closeMoodHistory();}
 
 /* WEEKLY TASK */
+// Уникальный ключ задания = дедлайн + первые 20 символов названия
+// Это гарантирует сброс отметки при смене задания даже если дедлайн тот же
+function weeklyTaskKey(){
+  const wt=APP_DATA?.weekly||FALLBACK.weekly;
+  return (wt.deadline||'')+'__'+(wt.title||'').slice(0,20);
+}
 function initWeeklyTask(){
   const wt=APP_DATA?.weekly||FALLBACK.weekly;
   const titleEl=document.getElementById('wk-title'),descEl=document.getElementById('wk-desc'),countEl=document.getElementById('wk-countdown');
@@ -954,10 +988,11 @@ function initWeeklyTask(){
     const f=document.getElementById('wk-fill'),p=document.getElementById('wk-prog-text');
     if(f)f.style.width=pct+'%';if(p)p.textContent=count>0?`${count} участников выполнили`:'Будь первым!';
   });
-  CS.get('weekly_task_id',savedId=>{if(savedId===(APP_DATA?.weekly||FALLBACK.weekly).deadline)setWeeklyDoneUI(true);});
+  // Сравниваем по составному ключу — если задание поменялось, кнопка сбросится
+  CS.get('weekly_task_id',savedId=>{if(savedId===weeklyTaskKey())setWeeklyDoneUI(true);});
 }
 function toggleWeeklyDone(){
-  const taskId=(APP_DATA?.weekly||FALLBACK.weekly).deadline;
+  const taskId=weeklyTaskKey();
   CS.get('weekly_task_id',savedId=>{
     if(savedId===taskId){
       CS.set('weekly_task_id',null);CS.get('weekly_done_count',c=>CS.set('weekly_done_count',Math.max(0,(c||0)-1)));
@@ -1069,12 +1104,26 @@ document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-_s
 /* ═══════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════ */
+// Аварийный сброс загрузки — на случай если что-то зависло
+function forceHideLoader(){
+  const el=document.getElementById('loading-overlay');
+  if(el&&!el.classList.contains('done')) el.classList.add('done');
+}
+
 async function init(){
   try{Telegram?.WebApp?.ready();Telegram?.WebApp?.expand();}catch(e){}
 
+  // Аварийный таймаут: через 12 секунд скрываем лоадер при любом раскладе
+  const emergencyTimer = setTimeout(()=>{
+    if(!APP_DATA) APP_DATA = FALLBACK;
+    try{ buildCards(); buildScreens(); buildOther(); }catch(e){}
+    forceHideLoader();
+  }, 12000);
+
+  // Таблица: ждём до 10 секунд (мобильный интернет медленнее)
   const sheetData = await Promise.race([
     loadFromSheets(),
-    new Promise(resolve => setTimeout(() => resolve(null), 7000))
+    new Promise(resolve => setTimeout(() => resolve(null), 10000))
   ]);
   APP_DATA = sheetData || FALLBACK;
 
@@ -1088,14 +1137,23 @@ async function init(){
   const moodKeys=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return'mood_'+d.toDateString();});
   const misc=['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
 
-  CS.loadAll([...progKeys,...noteKeys,...moodKeys,...misc],()=>{
-    try{const user=Telegram?.WebApp?.initDataUnsafe?.user;document.getElementById('username').textContent=user?.first_name||'Участник';}catch(e){}
-    const sub=document.getElementById('greeting-sub');if(sub)sub.textContent=GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
-    setAmbientByTime();loadTheme();initStreak();initCotd();
-    buildAllLessons();updateAllProgress();setNextDate();
-    loadTodayMood();initWeeklyTask();initNotifyBell();
-    setTimeout(()=>document.getElementById('loading-overlay').classList.add('done'),400);
+  // Таймаут и на CS.loadAll — если CloudStorage тормозит, не ждём вечно
+  const allKeys=[...progKeys,...noteKeys,...moodKeys,...misc];
+  let csTimer;
+  const csPromise = new Promise(resolve=>{
+    csTimer = setTimeout(resolve, 5000); // максимум 5 сек на чтение из CloudStorage
+    CS.loadAll(allKeys, resolve);
   });
+  await csPromise;
+  clearTimeout(csTimer);
+  clearTimeout(emergencyTimer);
+
+  try{const user=Telegram?.WebApp?.initDataUnsafe?.user;document.getElementById('username').textContent=user?.first_name||'Участник';}catch(e){}
+  const sub=document.getElementById('greeting-sub');if(sub)sub.textContent=GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
+  setAmbientByTime();loadTheme();initStreak();initCotd();
+  buildAllLessons();updateAllProgress();setNextDate();
+  loadTodayMood();initWeeklyTask();initNotifyBell();
+  setTimeout(()=>forceHideLoader(), 400);
 }
 
 init();
