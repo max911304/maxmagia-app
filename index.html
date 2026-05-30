@@ -558,13 +558,23 @@ async function loadFromSheets() {
       let headerRowIndex = -1;
       let cols = [];
 
-      // Вариант 1: Google сам нашёл заголовки в col.label
-      const autoLabels = json.table.cols.map(c => (c.label || '').toLowerCase().trim());
+      // Извлекаем чистое имя колонки из label
+      // Google иногда делает label = "📅 РАСПИСАНИЕ ВСТРЕЧ ... date" — берём последнее слово
+      const cleanLabel = (label) => {
+        const s = (label || '').toLowerCase().trim();
+        // Если label содержит известный заголовок как последнее слово — берём его
+        const words = s.split(/\s+/);
+        return words[words.length - 1] || s;
+      };
+
+      // Вариант 1: Google сам определил заголовки в col.label
+      // Берём чистое имя (последнее слово) из каждого label
+      const autoLabels = json.table.cols.map(c => cleanLabel(c.label));
       const hasAutoHeaders = knownHeaders.some(h => autoLabels.includes(h));
 
       if (hasAutoHeaders) {
         cols = autoLabels;
-        // данные идут с rows[0]
+        // данные идут с rows[0], headerRowIndex остаётся -1
       } else {
         // Вариант 2: ищем строку с заголовками вручную среди первых 10 строк
         for (let i = 0; i < Math.min(10, rawRows.length); i++) {
@@ -585,7 +595,7 @@ async function loadFromSheets() {
       }
 
       if (!cols.length) {
-        console.warn(`Sheet "${sheetName}": заголовки (${knownHeaders.join(', ')}) не найдены`);
+        console.warn(`Sheet "${sheetName}": заголовки не найдены. autoLabels:`, autoLabels);
         return [];
       }
 
@@ -596,9 +606,23 @@ async function loadFromSheets() {
         const obj = {};
         cols.forEach((col, i) => {
           const cell = row.c && row.c[i];
-          obj[col] = cell && cell.v !== null && cell.v !== undefined
-            ? String(cell.v).trim()
-            : '';
+          // Google gviz возвращает даты как объект Date — берём форматированное значение .f
+          // или преобразуем из Date(year,month,day) в YYYY-MM-DD
+          let cellVal = '';
+          if (cell && cell.v !== null && cell.v !== undefined) {
+            if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
+              // Формат: Date(2026,7,3) → 2026-08-03 (месяц 0-индексный)
+              const parts = cell.v.replace('Date(','').replace(')','').split(',');
+              const y=parts[0], m=String(+parts[1]+1).padStart(2,'0'), d=String(+parts[2]).padStart(2,'0');
+              cellVal = `${y}-${m}-${d}`;
+            } else if (cell.f) {
+              // .f = форматированное значение (как показывается в ячейке)
+              cellVal = String(cell.f).trim();
+            } else {
+              cellVal = String(cell.v).trim();
+            }
+          }
+          obj[col] = cellVal;
         });
         return obj;
       }).filter(r => Object.values(r).some(v => v));
@@ -621,14 +645,17 @@ async function loadFromSheets() {
 
     const data = { schedule: [], weekly: null, sections: [], lessons: {}, other: [], cotd: [] };
 
+    // Нормализуем дату: убираем время если оно есть ("2026-08-03 00:00:00" → "2026-08-03")
+    const normDate = (s) => s ? s.split(' ')[0].split('T')[0].trim() : s;
+
     scheduleRows.forEach(r => {
       if (r.date && r.title)
-        data.schedule.push({ date: r.date, time: r.time || '20:00', title: r.title, zoom: r.zoom || 'https://zoom.us' });
+        data.schedule.push({ date: normDate(r.date), time: r.time || '20:00', title: r.title, zoom: r.zoom || 'https://zoom.us' });
     });
 
     const wRow = weeklyRows[0];
     if (wRow && wRow.title)
-      data.weekly = { title: wRow.title, desc: wRow.desc || '', deadline: wRow.deadline || '' };
+      data.weekly = { title: wRow.title, desc: wRow.desc || '', deadline: normDate(wRow.deadline) || '' };
 
     sectionsRows.forEach(r => {
       if (r.id && r.name)
@@ -670,6 +697,7 @@ async function loadFromSheets() {
     console.log('✓ Sheets loaded | sections:', data.sections.length,
       '| schedule:', data.schedule.length,
       '| cotd:', data.cotd.length,
+      '| weekly title:', data.weekly?.title,
       '| lessons keys:', Object.keys(data.lessons));
     return data;
 
