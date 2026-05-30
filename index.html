@@ -558,18 +558,23 @@ async function loadFromSheets() {
       let headerRowIndex = -1;
       let cols = [];
 
-      // Извлекаем чистое имя колонки из label
-      // Google иногда делает label = "📅 РАСПИСАНИЕ ВСТРЕЧ ... date" — берём последнее слово
-      const cleanLabel = (label) => {
+      // Извлекаем чистое имя колонки из label.
+      // Google склеивает декоративный текст с именем колонки:
+      // "🎯 ЗАДАНИЕ НЕДЕЛИ ... title Заголовок задания" → ищем "title" внутри строки
+      const cleanLabel = (label, knownList) => {
         const s = (label || '').toLowerCase().trim();
-        // Если label содержит известный заголовок как последнее слово — берём его
+        // Ищем первое вхождение известного заголовка как отдельного слова
+        for (const h of knownList) {
+          // Слово должно быть окружено пробелами/началом/концом строки
+          if (new RegExp('(^|\\s)' + h + '(\\s|$)').test(s)) return h;
+        }
+        // Запасной вариант: последнее слово
         const words = s.split(/\s+/);
         return words[words.length - 1] || s;
       };
 
       // Вариант 1: Google сам определил заголовки в col.label
-      // Берём чистое имя (последнее слово) из каждого label
-      const autoLabels = json.table.cols.map(c => cleanLabel(c.label));
+      const autoLabels = json.table.cols.map(c => cleanLabel(c.label, knownHeaders));
       const hasAutoHeaders = knownHeaders.some(h => autoLabels.includes(h));
 
       if (hasAutoHeaders) {
@@ -1215,8 +1220,23 @@ async function init(){
 
     // Обновляем виджеты с актуальными данными из таблицы
     setNextDate();      // расписание
-    initWeeklyTask();   // задание недели
     initCotd();         // карта дня
+
+    // Задание недели — принудительно обновляем текст из таблицы
+    // (независимо от кешированного ключа)
+    const wt = APP_DATA.weekly;
+    if (wt) {
+      const titleEl = document.getElementById('wk-title');
+      const descEl  = document.getElementById('wk-desc');
+      const countEl = document.getElementById('wk-countdown');
+      if (titleEl) titleEl.textContent = wt.title;
+      if (descEl)  descEl.textContent  = wt.desc;
+      if (countEl && wt.deadline) {
+        const diff = Math.ceil((new Date(wt.deadline) - new Date()) / 86400000);
+        countEl.textContent = diff > 0 ? `⏳ ${diff} дн.` : '⌛ Завершено';
+      }
+    }
+    initWeeklyTask(); // обновляет кнопку «Выполнено» по ключу
 
     if(!wasUsingFallback) console.log('✓ Данные таблицы обновлены');
   } else {
