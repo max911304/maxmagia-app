@@ -606,17 +606,22 @@ async function loadFromSheets() {
         const obj = {};
         cols.forEach((col, i) => {
           const cell = row.c && row.c[i];
-          // Google gviz возвращает даты как объект Date — берём форматированное значение .f
-          // или преобразуем из Date(year,month,day) в YYYY-MM-DD
+          // Google gviz кодирует даты и время как Date(...)
+          // Время хранится как Date(1899,11,30,H,M,S) — определяем по году 1899
           let cellVal = '';
           if (cell && cell.v !== null && cell.v !== undefined) {
             if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
-              // Формат: Date(2026,7,3) → 2026-08-03 (месяц 0-индексный)
-              const parts = cell.v.replace('Date(','').replace(')','').split(',');
-              const y=parts[0], m=String(+parts[1]+1).padStart(2,'0'), d=String(+parts[2]).padStart(2,'0');
-              cellVal = `${y}-${m}-${d}`;
+              const parts = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
+              const year = parts[0];
+              if (year === 1899) {
+                // Это время — берём форматированное значение .f ("19:30")
+                cellVal = cell.f ? String(cell.f).trim() : `${String(parts[3]).padStart(2,'0')}:${String(parts[4]).padStart(2,'0')}`;
+              } else {
+                // Это дата — конвертируем в YYYY-MM-DD (месяц 0-индексный)
+                cellVal = cell.f ? String(cell.f).trim()
+                  : `${parts[0]}-${String(parts[1]+1).padStart(2,'0')}-${String(parts[2]).padStart(2,'0')}`;
+              }
             } else if (cell.f) {
-              // .f = форматированное значение (как показывается в ячейке)
               cellVal = String(cell.f).trim();
             } else {
               cellVal = String(cell.v).trim();
@@ -653,7 +658,14 @@ async function loadFromSheets() {
         data.schedule.push({ date: normDate(r.date), time: r.time || '20:00', title: r.title, zoom: r.zoom || 'https://zoom.us' });
     });
 
-    const wRow = weeklyRows[0];
+    // Берём первую строку где title похож на реальное задание (не инструкцию)
+    // Пропускаем строки-подсказки вроде "Заголовок задания", "Описание (что нужно делать)"
+    const metaWords = ['заголовок', 'описание', 'дедлайн', 'yyyy', 'что нужно'];
+    const wRow = weeklyRows.find(r => {
+      if (!r.title) return false;
+      const t = r.title.toLowerCase();
+      return !metaWords.some(w => t.includes(w));
+    });
     if (wRow && wRow.title)
       data.weekly = { title: wRow.title, desc: wRow.desc || '', deadline: normDate(wRow.deadline) || '' };
 
