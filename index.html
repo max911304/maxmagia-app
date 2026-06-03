@@ -21,20 +21,14 @@
 html,body{height:100%;background:var(--bg);color:var(--white);font-family:var(--font-sans);overflow:hidden;-webkit-font-smoothing:antialiased}
 body::before{content:'';position:fixed;z-index:0;pointer-events:none;top:-20%;left:50%;transform:translateX(-50%);width:700px;height:380px;background:radial-gradient(ellipse at center,rgba(200,169,110,0.07) 0%,transparent 68%)}
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E")}
-
-/* LOADING */
 .loading-overlay{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s ease}
 .loading-overlay.done{opacity:0;pointer-events:none}
 .loading-spinner{width:36px;height:36px;border:2px solid rgba(200,169,110,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 .loading-text{font-family:var(--font-serif);font-size:18px;color:var(--gold);opacity:.8}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* SCREENS */
 .screen{position:fixed;inset:0;z-index:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;opacity:0;transform:translateX(46px);pointer-events:none;transition:opacity .36s cubic-bezier(.4,0,.2,1),transform .36s cubic-bezier(.4,0,.2,1);padding-bottom:36px}
 .screen.active{opacity:1;transform:translateX(0);pointer-events:all}
 .screen.exit{opacity:0;transform:translateX(-46px)}
-
-/* HEADER */
 .header{padding:22px 20px 14px;position:sticky;top:0;z-index:10;background:linear-gradient(180deg,var(--bg) 72%,transparent);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
 .header-row{display:flex;align-items:flex-start;justify-content:space-between}
 .header-eyebrow{font-size:9.5px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:5px}
@@ -50,8 +44,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes newPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,80,80,0)}50%{box-shadow:0 0 0 4px rgba(255,80,80,.12)}}
 .hairline{height:1px;margin:0 20px;background:linear-gradient(90deg,transparent,var(--gold-border),transparent)}
-
-/* MOOD TRACKER */
 .mood-bar{margin:12px 16px 0;padding:12px 16px;background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:var(--r-sm);position:relative;overflow:hidden}
 .mood-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
 .mood-label{font-size:9px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
@@ -62,8 +54,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .mood-btn.selected{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);transform:scale(1.15)}
 .mood-dots{display:flex;justify-content:center;gap:4px;margin-top:8px}
 .mood-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.1);transition:background .3s;flex-shrink:0}
-
-/* BROADCAST */
 .broadcast-card{margin:16px 16px 0;padding:20px;background:linear-gradient(135deg,rgba(200,169,110,.07),rgba(200,169,110,.02));border:1px solid var(--gold-border);border-radius:var(--r);position:relative;overflow:hidden}
 .broadcast-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 .bc-tag{font-size:9px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:9px}
@@ -72,15 +62,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .bc-meta strong{color:rgba(242,237,229,.72);font-weight:500}
 .zoom-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--gold) 0%,#9e7540 100%);color:#08080e;font-family:var(--font-sans);font-weight:700;font-size:13.5px;padding:11px 22px;border:none;border-radius:11px;cursor:pointer;box-shadow:0 4px 18px rgba(200,169,110,.28);transition:all .18s;letter-spacing:.15px}
 .zoom-btn:active{transform:scale(.96);box-shadow:0 2px 8px rgba(200,169,110,.18)}
-
-/* ACTION ROW */
 .action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 16px 0}
 .action-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:13px 10px;background:var(--surface);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-sm);cursor:pointer;transition:all .18s;text-align:center}
 .action-btn:active{background:var(--surface-hover);transform:scale(.97)}
 .action-btn-icon{font-size:20px;line-height:1}
 .action-btn-label{font-size:12.5px;font-weight:500;color:var(--white);opacity:.82;line-height:1.3}
-
-/* WEEKLY TASK */
 .weekly-card{margin:12px 16px 0;padding:18px 20px;background:linear-gradient(135deg,rgba(80,160,120,.08),rgba(80,160,120,.02));border:1px solid rgba(80,160,120,.22);border-radius:var(--r);position:relative;overflow:hidden;cursor:pointer;transition:all .2s}
 .weekly-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(80,200,140,.5),transparent)}
 .weekly-card:active{transform:scale(.99)}
@@ -96,8 +82,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .wk-done-btn{margin-top:12px;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;cursor:pointer;transition:all .2s;background:rgba(80,160,120,.1);border:1px solid rgba(80,160,120,.25);color:#4ec994;font-family:var(--font-sans);font-size:12px;font-weight:600}
 .wk-done-btn.done{background:rgba(80,160,120,.2);border-color:rgba(80,160,120,.4)}
 .wk-done-btn:active{transform:scale(.96)}
-
-/* CONTINUE */
 .continue-banner{margin:10px 16px 0;padding:14px 16px;background:linear-gradient(135deg,rgba(52,210,122,.07),rgba(52,210,122,.02));border:1px solid rgba(52,210,122,.18);border-radius:var(--r-sm);display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
 .continue-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(52,210,122,.4),transparent)}
 .continue-banner:active{transform:scale(.98)}
@@ -105,13 +89,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .cb-label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--green);opacity:.7;margin-bottom:2px}
 .cb-title{font-size:14px;font-weight:500;color:var(--white);opacity:.88;line-height:1.35}
 .cb-arrow{font-size:18px;color:var(--green);opacity:.4}
-
-/* SECTION */
 .section-header{padding:24px 20px 10px;display:flex;align-items:center;gap:10px}
 .section-label{font-size:9.5px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .section-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.065),transparent)}
-
-/* CARDS */
 .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px}
 .card{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:var(--r);padding:18px 15px;cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .22s cubic-bezier(.4,0,.2,1);animation:fadeUp .4s ease both}
 .card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);opacity:0;transition:opacity .2s}
@@ -128,8 +108,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .card-full .card-body{flex:1}
 .card-full .card-name,.card-full .card-desc,.card-full .card-arrow{text-align:left}
 .card-full .card-arrow{margin-top:0;font-size:16px}
-
-/* COTD */
 .cotd-card{margin:20px 16px 10px;padding:18px 20px;background:linear-gradient(135deg,rgba(180,130,200,.06),rgba(180,130,200,.015));border:1px solid rgba(180,130,200,.2);border-radius:var(--r);position:relative;overflow:hidden}
 .cotd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,180,220,.4),transparent)}
 .cotd-tag{font-size:9px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#c8b4dc;display:block;margin-bottom:8px}
@@ -141,8 +119,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .cotd-fav{display:flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(200,180,220,.08);border:1px solid rgba(200,180,220,.18);border-radius:10px;cursor:pointer;transition:all .2s;font-size:11px;font-weight:600;color:#c8b4dc;opacity:.7}
 .cotd-fav:active{background:rgba(200,180,220,.18);opacity:1}
 .cotd-fav.saved{color:#e8b4f8;opacity:1;background:rgba(200,100,255,.1);border-color:rgba(200,100,255,.25)}
-
-/* BOLTALKA */
 .boltalka-wrap{padding:20px 16px 0}
 .bd{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .bd-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-border),transparent)}
@@ -154,8 +130,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .bb-title{font-size:15px;font-weight:600;color:var(--gold-hi)}
 .bb-sub{font-size:11px;color:var(--gold);opacity:.5;font-weight:400;margin-top:1px}
 .bb-arrow{font-size:18px;color:var(--gold);opacity:.35}
-
-/* SUBPAGE */
 .subpage-header{padding:16px 16px 0;position:sticky;top:0;z-index:10;background:linear-gradient(180deg,var(--bg) 78%,transparent);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
 .back-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(255,255,255,.08);color:var(--muted);font-family:var(--font-sans);font-size:13px;font-weight:500;padding:7px 14px 7px 10px;border-radius:20px;cursor:pointer;margin-bottom:18px;transition:all .18s}
 .back-btn:active{background:rgba(255,255,255,.05);color:var(--white)}
@@ -166,8 +140,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .sp-progress-bar{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
 .sp-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold-lo),var(--gold));border-radius:3px;transition:width .5s ease}
 .sp-progress-text{font-size:10px;font-weight:600;color:var(--gold);opacity:.65;white-space:nowrap}
-
-/* LESSONS */
 .lessons{padding:8px 16px;display:flex;flex-direction:column;gap:6px}
 .lesson{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid rgba(255,255,255,.055);border-radius:var(--r-sm);padding:13px 15px;cursor:pointer;text-decoration:none;color:var(--white);transition:all .17s;animation:fadeUp .3s ease both;position:relative}
 .lesson:nth-child(1){animation-delay:.03s}.lesson:nth-child(2){animation-delay:.06s}.lesson:nth-child(3){animation-delay:.09s}.lesson:nth-child(4){animation-delay:.12s}.lesson:nth-child(5){animation-delay:.15s}.lesson:nth-child(6){animation-delay:.18s}.lesson:nth-child(7){animation-delay:.21s}.lesson:nth-child(8){animation-delay:.24s}.lesson:nth-child(9){animation-delay:.27s}
@@ -194,20 +166,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .note-save-btn{padding:8px 16px;background:var(--gold-lo);border:1px solid var(--gold-border);color:var(--gold);font-family:var(--font-sans);font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .18s}
 .note-save-btn:active{background:rgba(200,169,110,.3)}
 .note-saved-badge{font-size:11px;color:var(--green);opacity:.7;margin-top:6px;display:none;text-align:right}
-
-/* OTHER */
 .other-grid{padding:8px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .other-card{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:var(--r);padding:24px 14px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;text-decoration:none;color:var(--white);transition:all .2s;animation:fadeUp .3s ease both}
 .other-card:nth-child(1){animation-delay:.03s}.other-card:nth-child(2){animation-delay:.06s}.other-card:nth-child(3){animation-delay:.09s}.other-card:nth-child(4){animation-delay:.12s}
 .other-card:active{border-color:var(--gold-border);background:var(--surface-hover);transform:scale(.96)}
 .oc-icon{font-size:30px}
 .oc-text{font-size:13px;font-weight:500;text-align:center;line-height:1.3;opacity:.84}
-
-/* TOAST */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);z-index:200;background:#1c1c28;border:1px solid rgba(52,210,122,.3);border-radius:20px;padding:9px 20px;font-size:13px;font-weight:500;color:var(--green);opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4);pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* MODALS */
 .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .32s ease}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal-sheet{width:100%;background:#13100c;border-radius:28px 28px 0 0;border-top:1px solid rgba(200,169,110,.25);padding:0 0 40px;max-height:88vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,0,.15,1);position:relative;overflow:hidden}
@@ -237,8 +203,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .nb-zoom-link{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--gold),#9e7540);color:#08080e;font-family:var(--font-sans);font-weight:700;font-size:12px;padding:7px 14px;border-radius:8px;text-decoration:none;cursor:pointer;border:none;box-shadow:0 3px 12px rgba(200,169,110,.22);transition:all .18s}
 .nb-zoom-link:active{transform:scale(.95)}
 .nb-empty{text-align:center;padding:48px 20px;font-family:var(--font-hand);font-size:22px;color:var(--muted);line-height:1.6}
-
-/* MOOD HISTORY */
 .mood-modal-body{padding:16px;position:relative;z-index:1;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
 .mood-chart{display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:12px}
 .mood-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -253,8 +217,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .mood-hist-info{flex:1}
 .mood-hist-date{font-size:11px;color:var(--muted)}
 .mood-hist-label{font-size:13px;color:var(--white);opacity:.85;margin-top:1px}
-
-/* NOTIFY */
 .notify-body{padding:20px;position:relative;z-index:1}
 .notify-title{font-family:var(--font-serif);font-size:18px;font-weight:700;color:var(--white);margin-bottom:5px}
 .notify-sub{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5}
@@ -273,15 +235,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 </style>
 </head>
 <body>
-
 <div class="loading-overlay" id="loading-overlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">MaxMagia</div>
 </div>
-
 <div class="toast" id="toast"></div>
-
-<!-- DASHBOARD -->
 <div class="screen active" id="screen-home">
   <div class="header">
     <div class="header-row">
@@ -300,7 +258,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
   </div>
   <div class="hairline"></div>
-
   <div class="mood-bar">
     <div class="mood-label">Как ты сейчас?<span onclick="openMoodHistory()">📊 история</span></div>
     <div class="mood-emojis" id="mood-emojis">
@@ -318,14 +275,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
     <div class="mood-dots" id="mood-dots"></div>
   </div>
-
   <div class="broadcast-card">
     <span class="bc-tag">⚡ Ближайший эфир</span>
     <div class="bc-title" id="broadcast-title">Живой разбор запросов</div>
     <div class="bc-meta">📅 <strong id="next-date">...</strong> · <span id="broadcast-time">20:00</span> МСК</div>
     <button class="zoom-btn" id="zoom-btn-main" onclick="openLink('https://zoom.us')">🎥 Войти в Zoom</button>
   </div>
-
   <div class="action-row">
     <button class="action-btn" onclick="openLink('https://t.me/c/3955955328/75')">
       <span class="action-btn-icon">🙋</span>
@@ -336,7 +291,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <span class="action-btn-label">Расписание<br>встреч</span>
     </button>
   </div>
-
   <div class="weekly-card" id="weekly-card">
     <div class="wk-top">
       <span class="wk-tag">🎯 Задание недели</span>
@@ -352,7 +306,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <span id="wk-done-icon">○</span> <span id="wk-done-label">Отметить как выполнено</span>
     </button>
   </div>
-
   <div class="continue-banner" id="continue-banner" style="display:none" onclick="continueLesson()">
     <span class="cb-icon">▶</span>
     <div class="cb-body">
@@ -361,10 +314,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
     <span class="cb-arrow">›</span>
   </div>
-
   <div class="section-header"><span class="section-label">Практики</span><span class="section-line"></span></div>
   <div class="cards-grid" id="cards-practices"></div>
-
   <div class="boltalka-wrap">
     <div class="bd"><div class="bd-line"></div><div class="bd-text">Сообщество</div><div class="bd-line"></div></div>
     <div class="boltalka-btn" onclick="openLink('https://t.me/c/3955955328/20')">
@@ -374,10 +325,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <span class="bb-icon">🤖</span><div class="bb-body"><div class="bb-title">Болталка про ИИ</div><div class="bb-sub">Обсуждение нейронок</div></div><span class="bb-arrow">›</span>
     </div>
   </div>
-
   <div class="section-header"><span class="section-label">Инструменты</span><span class="section-line"></span></div>
   <div class="cards-grid" id="cards-tools"></div>
-
   <div class="cotd-card">
     <span class="cotd-tag" id="cotd-tag">🃏 Карта дня</span>
     <div class="cotd-body"><span class="cotd-icon" id="cotd-icon">✦</span><span class="cotd-text" id="cotd-text">...</span></div>
@@ -387,11 +336,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
   </div>
 </div>
-
-<!-- Субстраницы генерируются динамически -->
 <div id="dynamic-screens"></div>
-
-<!-- OTHER -->
 <div class="screen" id="screen-other">
   <div class="subpage-header">
     <button class="back-btn" onclick="goBack()">‹&nbsp; Назад</button>
@@ -400,8 +345,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
   <div class="other-grid" id="other-grid-content"></div>
 </div>
-
-<!-- SCHEDULE MODAL -->
 <div class="modal-overlay" id="schedule-modal" onclick="handleModalBg(event)">
   <div class="modal-sheet">
     <div class="modal-drag"></div>
@@ -412,8 +355,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="notebook-scroll" id="notebook-content"></div>
   </div>
 </div>
-
-<!-- MOOD MODAL -->
 <div class="modal-overlay" id="mood-modal" onclick="handleMoodModalBg(event)">
   <div class="modal-sheet">
     <div class="modal-drag"></div>
@@ -424,8 +365,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="mood-modal-body" id="mood-modal-body"></div>
   </div>
 </div>
-
-<!-- NOTIFY MODAL -->
 <div class="modal-overlay" id="notify-modal" onclick="handleNotifyModalBg(event)">
   <div class="modal-sheet">
     <div class="modal-drag"></div>
@@ -446,18 +385,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
   </div>
 </div>
-
 <script>
-/* ═══════════════════════════════════════════════════════
-   GOOGLE SHEETS ID
-   Таблица: https://docs.google.com/spreadsheets/d/1xHvl1J4YQ-Orkg1W9es9OHNPvi7BlA2z5ry0CnnFtwc
-   Чтобы сменить таблицу — замени только это значение
-═══════════════════════════════════════════════════════ */
 const SHEET_ID = '1xHvl1J4YQ-Orkg1W9es9OHNPvi7BlA2z5ry0CnnFtwc';
+const SUBSCRIBE_URL = 'https://script.google.com/macros/s/AKfycbzYZ2atBFAoUnj1z0_K7uX54fjDFv5QZl_d-elyp3G1_mkx8G9rWB8lF5tIpLMr05nU/exec';
 
-/* ═══════════════════════════════════════════════════════
-   CONFIG
-═══════════════════════════════════════════════════════ */
 const NEW_DAYS = 7;
 const THEMES = {
   dark:   {'--bg':'#09090e','--surface':'rgba(255,255,255,0.032)','--muted':'#64606e'},
@@ -471,10 +402,6 @@ const MOOD_EMOJIS = ['😱','😡','😢','☹️','😐','😌','😊','😜','
 const MOOD_LABELS = ['Ужас','Злость','Грусть','Не очень','Нейтрально','Спокойно','Хорошо','Весело','Отлично','Любовь','Огонь'];
 const GREETINGS  = ['Сегодня отличный день для практики','Твоё присутствие здесь — уже шаг вперёд','Доверься процессу, всё идёт как надо','Выдели 10 минут — и мир изменится','Ты именно там, где должен быть сейчас','Магия начинается с тишины внутри','Слушай себя — ответы уже есть'];
 
-/* ═══════════════════════════════════════════════════════
-   РЕЗЕРВНЫЕ ДАННЫЕ
-   Используются если таблица недоступна
-═══════════════════════════════════════════════════════ */
 const FALLBACK = {
   schedule:[
     {date:'2026-05-29',time:'20:00',title:'Живой разбор запросов',zoom:'https://zoom.us'},
@@ -502,45 +429,14 @@ const FALLBACK = {
       {title:'Медитации других авторов',url:'https://t.me/c/3955955328/11/71'},
       {title:'Октябрь 25: Расслабляемся глубоко',soon:true},
       {title:'Ноябрь 25: Возвращение к себе',soon:true},
-      {title:'Декабрь 25: Восстановление самоценности',soon:true},
-      {title:'Январь 26: Работа с частями личности',soon:true},
-      {title:'Март 26: Оттепель',soon:true},
-      {title:'Май 26: Жизнь в неопределённости',soon:true},
     ],
-    shield:[
-      {title:'Что такое личные границы',soon:true},{title:'Виды токсичного общения',soon:true},
-      {title:'Чувства при манипуляциях',soon:true},{title:'Если границы сломаны',soon:true},
-      {title:'Защита психики',soon:true},{title:'Способ защиты №1',soon:true},
-      {title:'Способ защиты №2',soon:true},{title:'Способ защиты №3',soon:true},
-    ],
-    code:[
-      {title:'Введение: Понять свои реакции',soon:true},{title:'Последствия отсутствия эволюции',soon:true},
-      {title:'Базовые психотравмы',soon:true},{title:'Родительские директивы',soon:true},
-      {title:'Дезадаптивные схемы',soon:true},
-    ],
-    future:[
-      {title:'Введение в проектирование жизни',soon:true},{title:'Колесо баланса и ценности',soon:true},
-      {title:'Техника мечты и визуализации',soon:true},{title:'Препятствия на пути к цели',soon:true},
-    ],
+    shield:[{title:'Что такое личные границы',soon:true},{title:'Виды токсичного общения',soon:true}],
+    code:[{title:'Введение: Понять свои реакции',soon:true},{title:'Последствия отсутствия эволюции',soon:true}],
+    future:[{title:'Введение в проектирование жизни',soon:true},{title:'Колесо баланса и ценности',soon:true}],
     ai:[{title:'Лаборатория ИИ — открыть канал',url:'https://t.me/c/3955955328/3',addedDate:'2026-05-22'}],
     archive:[{title:'AMA Сессии — открыть архив',url:'https://t.me/c/3955955328/13',addedDate:'2026-05-22'}],
-    myai:[
-      {title:'ARCETYPE.AI',url:'https://chatgpt.com/g/g-67fe425adcec8191ad98c046c59bba89-archetype-ai',addedDate:'2026-05-27',badge:'ChatGPT'},
-      {title:'Money-Archetype.AI',badge:'ChatGPT'},{title:'Поговори с ...',badge:'ChatGPT'},
-      {title:'Раскрутки убеждений фокусами языка',badge:'ChatGPT'},
-      {title:'Копирайтер Новосельцев',badge:'Claude'},{title:'ИИ маркетолог',badge:'Claude'},
-      {title:'Vasyan',badge:'ChatGPT'},{title:'MARVELON',badge:'ChatGPT'},
-      {title:'Архитектор будущего',badge:'Claude'},{title:'Милтон Эриксон AI',badge:'ChatGPT'},
-      {title:'Френк Фаррелли AI',badge:'ChatGPT'},{title:'Внушай и не ведись AI',badge:'Claude'},
-      {title:'Вирджиния Сатир AI',soon:true},
-    ],
-    records:[
-      {title:'Найди нужный тебе курс в складчине'},
-      {title:'Дмитрий Новосельцев — Копирайтинг как основа управления поведением человека'},
-      {title:'Дмитрий Новосельцев — ГСА'},
-      {title:'ИИ. Успевать всё'},{title:'ИИ. Создай сказку для своего малыша'},
-      {title:'Разминки',url:'https://t.me/c/3955955328/31'},
-    ],
+    myai:[{title:'ARCETYPE.AI',url:'https://chatgpt.com/g/g-67fe425adcec8191ad98c046c59bba89-archetype-ai',addedDate:'2026-05-27',badge:'ChatGPT'}],
+    records:[{title:'Записи встреч — в разработке',soon:true}],
   },
   other:[
     {icon:'📚',title:'Фильмы / Сериалы / Книги',url:'https://t.me/c/3955955328/24'},
@@ -551,162 +447,162 @@ const FALLBACK = {
   cotd:[
     {icon:'✦',tag:'Практика дня',text:'Сделай паузу на 3 минуты. Закрой глаза и просто слушай своё дыхание.',action:'↗ Попробовать сейчас'},
     {icon:'🌙',tag:'Вечерний ритуал',text:'Перед сном запиши три вещи за которые ты благодарен сегодня.',action:'↗ Взять блокнот'},
-    {icon:'🔥',tag:'Сила дня',text:'Сегодня твоя суперсила — умение сказать «нет». Позволь себе отказаться от того что не твоё.',action:'↗ Попробовать'},
+    {icon:'🔥',tag:'Сила дня',text:'Сегодня твоя суперсила — умение сказать «нет».',action:'↗ Попробовать'},
     {icon:'💧',tag:'Пауза',text:'Выпей стакан воды. Медленно. Почувствуй каждый глоток.',action:'↗ Пойти за водой'},
-    {icon:'🪞',tag:'Зеркало',text:'Скажи вслух: «Я имею право быть собой. Со мной всё в порядке».',action:'↗ Подойти к зеркалу'},
-    {icon:'📜',tag:'Вопрос дня',text:'Что бы ты делал если бы точно знал что не провалишься?',action:'↗ Записать'},
-    {icon:'🌿',tag:'Заземление',text:'Найди взглядом 5 предметов вокруг. Мысленно назови их. Почувствуй опору под ногами.',action:'↗ Оглядеться'},
   ],
 };
 
-/* ═══════════════════════════════════════════════════════
-   GOOGLE SHEETS LOADER
-═══════════════════════════════════════════════════════ */
 let APP_DATA = null;
 
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  const headers = csvRow(lines[0]);
-  return lines.slice(1).map(line => {
-    const vals = csvRow(line), obj = {};
-    headers.forEach((h,i) => { obj[h.trim()] = (vals[i]||'').trim(); });
-    return obj;
-  }).filter(r => Object.values(r).some(v=>v));
-}
-function csvRow(line) {
-  const res=[]; let cur='', inQ=false;
-  for (const ch of line) {
-    if (ch==='"') inQ=!inQ;
-    else if (ch===','&&!inQ) { res.push(cur); cur=''; }
-    else cur+=ch;
-  }
-  res.push(cur);
-  return res.map(s=>s.replace(/^"|"$/g,''));
-}
-
 async function loadFromSheets() {
-  if (!SHEET_ID || SHEET_ID==='ВСТАВЬ_ID_ТАБЛИЦЫ_СЮДА') return null;
-
-  const fetchWithTimeout = (url, ms=8000) => {
+  if (!SHEET_ID) return null;
+  const fetchWithTimeout = (url, ms = 8000) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), ms);
-    return fetch(url, {signal: controller.signal}).finally(() => clearTimeout(timer));
+    return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
   };
-
-  // Читаем через gviz/tq JSON — работает без CORS для публичных таблиц
-  const readSheet = async (sheetName) => {
+  const readSheet = async (sheetName, knownHeaders) => {
     try {
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
       const r = await fetchWithTimeout(url);
       if (!r.ok) return [];
       const text = await r.text();
-      // Google возвращает ответ вида: google.visualization.Query.setResponse({...})
       const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
       if (!json.table || !json.table.rows) return [];
-
-      const cols = json.table.cols.map(c => (c.label || c.id || '').toLowerCase().trim());
-      return json.table.rows.map(row => {
+      const rawRows = json.table.rows;
+      let headerRowIndex = -1;
+      let cols = [];
+      const cleanLabel = (label, knownList) => {
+        const s = (label || '').toLowerCase().trim();
+        for (const h of knownList) {
+          if (new RegExp('(^|\\s)' + h + '(\\s|$)').test(s)) return h;
+        }
+        const words = s.split(/\s+/);
+        return words[words.length - 1] || s;
+      };
+      const autoLabels = json.table.cols.map(c => cleanLabel(c.label, knownHeaders));
+      const hasAutoHeaders = knownHeaders.some(h => autoLabels.includes(h));
+      if (hasAutoHeaders) {
+        cols = autoLabels;
+      } else {
+        for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+          const row = rawRows[i];
+          if (!row.c) continue;
+          const cellValues = row.c.map(cell => cell && cell.v !== null && cell.v !== undefined ? String(cell.v).toLowerCase().trim() : '');
+          const matchCount = knownHeaders.filter(h => cellValues.includes(h)).length;
+          if (matchCount >= 1) { cols = cellValues; headerRowIndex = i; break; }
+        }
+      }
+      if (!cols.length) { console.warn(`Sheet "${sheetName}": заголовки не найдены`); return []; }
+      const dataRows = rawRows.slice(headerRowIndex + 1);
+      return dataRows.map(row => {
         const obj = {};
         cols.forEach((col, i) => {
           const cell = row.c && row.c[i];
-          obj[col] = cell && cell.v !== null && cell.v !== undefined ? String(cell.v).trim() : '';
+          let cellVal = '';
+          if (cell && cell.v !== null && cell.v !== undefined) {
+            if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
+              const parts = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
+              const year = parts[0];
+              if (year === 1899) {
+                cellVal = cell.f ? String(cell.f).trim() : `${String(parts[3]).padStart(2,'0')}:${String(parts[4]).padStart(2,'0')}`;
+              } else {
+                cellVal = cell.f ? String(cell.f).trim() : `${parts[0]}-${String(parts[1]+1).padStart(2,'0')}-${String(parts[2]).padStart(2,'0')}`;
+              }
+            } else if (cell.f) { cellVal = String(cell.f).trim(); }
+            else { cellVal = String(cell.v).trim(); }
+          }
+          obj[col] = cellVal;
         });
         return obj;
       }).filter(r => Object.values(r).some(v => v));
-    } catch(e) {
-      console.warn('Sheet read failed:', sheetName, e.message);
-      return [];
-    }
+    } catch (e) { console.warn('Sheet read failed:', sheetName, e.message); return []; }
   };
-
   try {
     const [scheduleRows, sectionsRows, lessonsRows, otherRows, cotdRows, weeklyRows] = await Promise.all([
-      readSheet('schedule'),
-      readSheet('sections'),
-      readSheet('lessons'),
-      readSheet('other'),
-      readSheet('cotd'),
-      readSheet('weekly'),
+      readSheet('schedule', ['date', 'time', 'title', 'zoom']),
+      readSheet('sections', ['id', 'icon', 'name', 'desc', 'group']),
+      readSheet('lessons',  ['section', 'title', 'url', 'addeddate', 'soon', 'badge']),
+      readSheet('other',    ['icon', 'title', 'url']),
+      readSheet('cotd',     ['icon', 'tag', 'text', 'action']),
+      readSheet('weekly',   ['title', 'desc', 'deadline']),
     ]);
-
-    const data = {schedule:[],weekly:null,sections:[],lessons:{},other:[],cotd:[]};
-
+    const data = { schedule: [], weekly: null, sections: [], lessons: {}, other: [], cotd: [] };
+    const normDate = (s) => s ? s.split(' ')[0].split('T')[0].trim() : s;
     scheduleRows.forEach(r => {
-      if(r.date&&r.title) data.schedule.push({date:r.date,time:r.time||'20:00',title:r.title,zoom:r.zoom||'https://zoom.us'});
+      if (r.date && r.title) data.schedule.push({ date: normDate(r.date), time: r.time || '20:00', title: r.title, zoom: r.zoom || 'https://zoom.us' });
     });
-
-    const wRow = weeklyRows[0];
-    if(wRow&&wRow.title) data.weekly = {title:wRow.title, desc:wRow.desc||'', deadline:wRow.deadline||''};
-
+    const metaWords = ['заголовок', 'описание', 'дедлайн', 'yyyy', 'что нужно'];
+    const wRow = weeklyRows.find(r => {
+      if (!r.title) return false;
+      const t = r.title.toLowerCase();
+      return !metaWords.some(w => t.includes(w));
+    });
+    if (wRow && wRow.title) data.weekly = { title: wRow.title, desc: wRow.desc || '', deadline: normDate(wRow.deadline) || '' };
     sectionsRows.forEach(r => {
-      if(r.id&&r.name) data.sections.push({id:r.id,icon:r.icon||'📁',name:r.name,desc:r.desc||'',group:r.group||'practices'});
+      if (r.id && r.name) data.sections.push({ id: r.id, icon: r.icon || '📁', name: r.name, desc: r.desc || '', group: r.group || 'practices' });
     });
-
     lessonsRows.forEach(r => {
-      if(!r.section||!r.title) return;
-      if(!data.lessons[r.section]) data.lessons[r.section]=[];
-      const item = {title:r.title};
-      if(r.url&&r.url!=='-'&&r.url!=='') item.url = r.url;
-      if(r.addeddate&&r.addeddate!=='-'&&r.addeddate!=='') item.addedDate = r.addeddate;
-      if(r.soon&&r.soon.toLowerCase()==='true') item.soon = true;
-      if(r.badge&&r.badge!=='-'&&r.badge!=='') item.badge = r.badge;
+      if (!r.section || !r.title) return;
+      if (!data.lessons[r.section]) data.lessons[r.section] = [];
+      const item = { title: r.title };
+      if (r.url && r.url !== '-' && r.url !== '') item.url = r.url;
+      if (r.addeddate && r.addeddate !== '-' && r.addeddate !== '') item.addedDate = r.addeddate;
+      if (r.soon && r.soon.toLowerCase() === 'true') item.soon = true;
+      if (r.badge && r.badge !== '-' && r.badge !== '') item.badge = r.badge;
       data.lessons[r.section].push(item);
     });
-
-    otherRows.forEach(r => {
-      if(r.title&&r.url) data.other.push({icon:r.icon||'📎',title:r.title,url:r.url});
-    });
-
-    cotdRows.forEach(r => {
-      if(r.text) data.cotd.push({icon:r.icon||'✦',tag:r.tag||'Практика дня',text:r.text,action:r.action||'↗ Попробовать'});
-    });
-
-    // Заполняем пустое из fallback
-    if(!data.schedule.length)  data.schedule = FALLBACK.schedule;
-    if(!data.weekly)           data.weekly   = FALLBACK.weekly;
-    if(!data.sections.length)  data.sections = FALLBACK.sections;
-    if(!Object.keys(data.lessons).length) data.lessons = FALLBACK.lessons;
-    FALLBACK.sections.forEach(s => { if(!data.lessons[s.id]) data.lessons[s.id] = FALLBACK.lessons[s.id]||[]; });
-    if(!data.other.length) data.other = FALLBACK.other;
-    if(!data.cotd.length)  data.cotd  = FALLBACK.cotd;
-
-    console.log('Sheets loaded ✓ sections:', data.sections.length, 'lessons keys:', Object.keys(data.lessons));
+    otherRows.forEach(r => { if (r.title && r.url) data.other.push({ icon: r.icon || '📎', title: r.title, url: r.url }); });
+    cotdRows.forEach(r => { if (r.text) data.cotd.push({ icon: r.icon || '✦', tag: r.tag || 'Практика дня', text: r.text, action: r.action || '↗ Попробовать' }); });
+    if (!data.schedule.length) data.schedule = FALLBACK.schedule;
+    if (!data.weekly) data.weekly = FALLBACK.weekly;
+    if (!data.sections.length) data.sections = FALLBACK.sections;
+    if (!Object.keys(data.lessons).length) data.lessons = FALLBACK.lessons;
+    FALLBACK.sections.forEach(s => { if (!data.lessons[s.id]) data.lessons[s.id] = FALLBACK.lessons[s.id] || []; });
+    if (!data.other.length) data.other = FALLBACK.other;
+    if (!data.cotd.length) data.cotd = FALLBACK.cotd;
+    console.log('✓ Sheets loaded | sections:', data.sections.length, '| schedule:', data.schedule.length, '| cotd:', data.cotd.length, '| weekly:', data.weekly?.title, '| lessons:', Object.keys(data.lessons));
     return data;
-  } catch(e) {
-    console.warn('Sheets global error:', e.message);
-    return null;
-  }
+  } catch (e) { console.warn('Sheets global error:', e.message); return null; }
 }
 
-/* ═══════════════════════════════════════════════════════
-   CLOUD STORAGE
-═══════════════════════════════════════════════════════ */
+const LS = {
+  get(k){ try{ return localStorage.getItem('mm_'+k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem('mm_'+k,v); }catch(e){} },
+};
 const CS = {
   _c:{}, _p:{},
-  set(k,v){ const s=JSON.stringify(v); this._c[k]=s; try{ if(Telegram?.WebApp?.CloudStorage) Telegram.WebApp.CloudStorage.setItem(k,s,()=>{}); else sessionStorage.setItem('mm_'+k,s); }catch(e){} },
+  set(k,v){
+    const s=JSON.stringify(v);
+    this._c[k]=s;
+    LS.set(k,s);
+    try{ if(Telegram?.WebApp?.CloudStorage) Telegram.WebApp.CloudStorage.setItem(k,s,()=>{}); }catch(e){}
+  },
   get(k,cb){
-    if(this._c[k]!==undefined){try{cb(JSON.parse(this._c[k]))}catch(e){cb(null)}return}
+    if(this._c[k]!==undefined){ try{cb(JSON.parse(this._c[k]))}catch(e){cb(null)} return; }
     try{
       if(Telegram?.WebApp?.CloudStorage){
-        if(this._p[k]){this._p[k].push(cb);return}
+        if(this._p[k]){ this._p[k].push(cb); return; }
         this._p[k]=[cb];
         Telegram.WebApp.CloudStorage.getItem(k,(err,val)=>{
-          const cbs=this._p[k];delete this._p[k];
-          if(!err&&val){this._c[k]=val;cbs.forEach(c=>{try{c(JSON.parse(val))}catch(e){c(null)}})}
-          else cbs.forEach(c=>c(null));
+          const cbs=this._p[k]; delete this._p[k];
+          if(!err && val){ this._c[k]=val; LS.set(k,val); cbs.forEach(c=>{ try{c(JSON.parse(val))}catch(e){c(null)} }); }
+          else {
+            const local=LS.get(k);
+            if(local){ this._c[k]=local; try{ Telegram.WebApp.CloudStorage.setItem(k,local,()=>{}); }catch(e){} cbs.forEach(c=>{ try{c(JSON.parse(local))}catch(e){c(null)} }); }
+            else { cbs.forEach(c=>c(null)); }
+          }
         });
       } else {
-        const val=sessionStorage.getItem('mm_'+k);
-        if(val){this._c[k]=val;try{cb(JSON.parse(val))}catch(e){cb(null)}}else cb(null);
+        const val=LS.get(k);
+        if(val){ this._c[k]=val; try{cb(JSON.parse(val))}catch(e){cb(null)} }
+        else cb(null);
       }
-    }catch(e){cb(null)}
+    }catch(e){ cb(null); }
   },
   loadAll(keys,cb){ let p=keys.length; if(!p){cb();return} keys.forEach(k=>this.get(k,()=>{if(--p===0)cb()})); },
 };
 
-/* ═══════════════════════════════════════════════════════
-   BUILD UI
-═══════════════════════════════════════════════════════ */
 function buildCards() {
   const pe=document.getElementById('cards-practices'), te=document.getElementById('cards-tools');
   APP_DATA.sections.forEach((s,i)=>{
@@ -750,9 +646,6 @@ function buildOther() {
     </a>`).join('');
 }
 
-/* ═══════════════════════════════════════════════════════
-   PROGRESS
-═══════════════════════════════════════════════════════ */
 function getProgress(cat){ const r=CS._c['prog_'+cat]; if(!r)return[]; try{return JSON.parse(r)}catch(e){return[]} }
 function isNew(item){ return item.addedDate?(Date.now()-new Date(item.addedDate).getTime())<NEW_DAYS*86400000:false; }
 
@@ -826,7 +719,6 @@ function buildLessons(cat){
 
 function buildAllLessons(){ (APP_DATA?.sections||[]).forEach(s=>buildLessons(s.id)); }
 
-/* NOTES */
 function toggleNote(cat,idx,el){
   const w=document.getElementById(`nw_${cat}_${idx}`), o=w.classList.contains('open');
   w.classList.toggle('open',!o); el.textContent=o?'📝 заметка':'✕ закрыть';
@@ -839,7 +731,6 @@ function saveNote(cat,idx){
   const b=document.getElementById(`ns_${cat}_${idx}`); if(b){b.style.display='block';setTimeout(()=>b.style.display='none',2000);}
 }
 
-/* COTD */
 function initCotd(){
   const today=new Date().toDateString();
   CS.get('cotd_date',ld=>CS.get('cotd_idx',idx=>{
@@ -869,7 +760,6 @@ function toggleFavCotd(){
   }));
 }
 
-/* STREAK */
 function initStreak(){
   const today=new Date().toDateString();
   CS.get('streak_date',ld=>CS.get('streak_count',streak=>{
@@ -879,7 +769,6 @@ function initStreak(){
   }));
 }
 
-/* THEME */
 let currentTheme='dark';
 function toggleTheme(){
   const ts=['dark','warm','forest'],idx=(ts.indexOf(currentTheme)+1)%ts.length;currentTheme=ts[idx];
@@ -889,11 +778,9 @@ function toggleTheme(){
 }
 function loadTheme(){ CS.get('theme',t=>{ if(t&&THEMES[t]){currentTheme=t;Object.entries(THEMES[t]).forEach(([p,v])=>document.documentElement.style.setProperty(p,v));} }); }
 
-/* AMBIENT */
 function setAmbientByTime(){ const h=new Date().getHours(),e=document.getElementById('eyebrow-text');if(!e)return;
   if(h>=5&&h<12)e.textContent='Доброе утро';else if(h>=12&&h<19)e.textContent='Добрый день';else if(h>=19&&h<23)e.textContent='Время магии';else e.textContent='Ночные практики';}
 
-/* MOOD */
 function saveMood(idx){
   const today=new Date().toDateString();CS.set('mood_'+today,idx);
   document.querySelectorAll('.mood-btn').forEach((btn,i)=>btn.classList.toggle('selected',i===idx));
@@ -942,7 +829,10 @@ function openMoodHistory(){
 function closeMoodHistory(){document.getElementById('mood-modal').classList.remove('open');}
 function handleMoodModalBg(e){if(e.target===document.getElementById('mood-modal'))closeMoodHistory();}
 
-/* WEEKLY TASK */
+function weeklyTaskKey(){
+  const wt=APP_DATA?.weekly||FALLBACK.weekly;
+  return (wt.deadline||'')+'__'+(wt.title||'').slice(0,20);
+}
 function initWeeklyTask(){
   const wt=APP_DATA?.weekly||FALLBACK.weekly;
   const titleEl=document.getElementById('wk-title'),descEl=document.getElementById('wk-desc'),countEl=document.getElementById('wk-countdown');
@@ -953,10 +843,10 @@ function initWeeklyTask(){
     const f=document.getElementById('wk-fill'),p=document.getElementById('wk-prog-text');
     if(f)f.style.width=pct+'%';if(p)p.textContent=count>0?`${count} участников выполнили`:'Будь первым!';
   });
-  CS.get('weekly_task_id',savedId=>{if(savedId===(APP_DATA?.weekly||FALLBACK.weekly).deadline)setWeeklyDoneUI(true);});
+  CS.get('weekly_task_id',savedId=>{if(savedId===weeklyTaskKey())setWeeklyDoneUI(true);});
 }
 function toggleWeeklyDone(){
-  const taskId=(APP_DATA?.weekly||FALLBACK.weekly).deadline;
+  const taskId=weeklyTaskKey();
   CS.get('weekly_task_id',savedId=>{
     if(savedId===taskId){
       CS.set('weekly_task_id',null);CS.get('weekly_done_count',c=>CS.set('weekly_done_count',Math.max(0,(c||0)-1)));
@@ -978,8 +868,12 @@ function setWeeklyDoneUI(done){
   if(card)card.style.borderColor=done?'rgba(80,200,140,.4)':'';
 }
 
-/* NOTIFY */
+/* ─────────────────────────────────────────
+   НАПОМИНАНИЯ — теперь сохраняются ПРЯМО В ТАБЛИЦУ через Apps Script
+   Это обходит баг sendData() в Telegram WebApp
+───────────────────────────────────────── */
 let selectedNotifyTime='off';
+
 function openNotifyModal(){CS.get('notify_time',t=>{selectedNotifyTime=t||'off';updateNotifyUI();document.getElementById('notify-modal').classList.add('open');haptic('light');});}
 function closeNotifyModal(){document.getElementById('notify-modal').classList.remove('open');}
 function handleNotifyModalBg(e){if(e.target===document.getElementById('notify-modal'))closeNotifyModal();}
@@ -988,27 +882,69 @@ function updateNotifyUI(){
   document.querySelectorAll('.notify-opt').forEach(o=>o.classList.toggle('active',o.dataset.time===selectedNotifyTime));
   const bell=document.getElementById('notify-bell');if(bell)bell.style.opacity=selectedNotifyTime!=='off'?'1':'.5';
 }
-function saveNotifySettings(){
-  CS.set('notify_time',selectedNotifyTime);
-  showToast(selectedNotifyTime==='off'?'🔕 Напоминания выключены':`🔔 Напоминания в ${selectedNotifyTime} сохранены`);
-  haptic('success');
-  // Отправляем данные в бот ВСЕГДА — даже для 'off' (бот должен знать что выключили)
-  // Telegram гарантированно доставляет sendData только при закрытии WebApp,
-  // поэтому делаем sendData → задержка → close
+
+// Прямая отправка в Google Apps Script — работает откуда угодно, не зависит от типа кнопки в Telegram
+async function sendNotifyToSheets(time) {
   try {
-    if (Telegram?.WebApp?.sendData) {
-      Telegram.WebApp.sendData(JSON.stringify({action:'set_reminder',time:selectedNotifyTime}));
-      // Закрываем WebApp через секунду — это триггерит реальную доставку sendData боту
-      setTimeout(()=>{ try { Telegram.WebApp.close(); } catch(e){} }, 600);
-      return;
+    const user = Telegram?.WebApp?.initDataUnsafe?.user;
+    if (!user || !user.id) {
+      console.warn('Нет данных пользователя Telegram — не могу записать в таблицу');
+      return false;
     }
-  } catch(e){}
-  // Если sendData недоступен (открыто в браузере) — просто закрываем модалку
-  closeNotifyModal();
+    const payload = {
+      action: 'subscribe',
+      user_id: String(user.id),
+      username: user.username || '',
+      first_name: user.first_name || '',
+      notify_time: time === 'off' ? '' : time,
+    };
+    // text/plain чтобы избежать preflight CORS-запроса к Apps Script
+    const response = await fetch(SUBSCRIBE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    console.log('Notify saved to sheets:', result);
+    return result.ok === true;
+  } catch (e) {
+    console.warn('Не удалось сохранить в таблицу:', e.message);
+    return false;
+  }
 }
+
+function saveNotifySettings(){
+  // 1. Локально сразу — мгновенный отклик UI
+  CS.set('notify_time', selectedNotifyTime);
+  closeNotifyModal();
+
+  // 2. Подтверждение пользователю
+  if (selectedNotifyTime === 'off') {
+    showToast('🔕 Напоминания выключены');
+  } else {
+    showToast(`🔔 Сохраняем напоминания на ${selectedNotifyTime}...`);
+  }
+  haptic('success');
+
+  // 3. Сохраняем в Google Таблицу — это главное, отсюда бот будет читать
+  sendNotifyToSheets(selectedNotifyTime).then(ok => {
+    if (ok && selectedNotifyTime !== 'off') {
+      showToast(`✓ Готово! Напоминания в ${selectedNotifyTime} МСК`);
+    } else if (ok && selectedNotifyTime === 'off') {
+      showToast('✓ Напоминания отключены');
+    } else if (!ok) {
+      showToast('⚠ Сохранено локально, синхронизация не удалась');
+    }
+  });
+
+  // 4. Дополнительно — sendData (вдруг сработает в каком-то клиенте)
+  if (selectedNotifyTime !== 'off') {
+    try { Telegram?.WebApp?.sendData(JSON.stringify({action:'set_reminder',time:selectedNotifyTime})); } catch(e) {}
+  }
+}
+
 function initNotifyBell(){CS.get('notify_time',t=>{const b=document.getElementById('notify-bell');if(b)b.style.opacity=(t&&t!=='off')?'1':'.5';});}
 
-/* SCHEDULE */
 function openSchedule(){buildNotebook();document.getElementById('schedule-modal').classList.add('open');haptic('light');}
 function closeSchedule(){document.getElementById('schedule-modal').classList.remove('open');}
 function handleModalBg(e){if(e.target===document.getElementById('schedule-modal'))closeSchedule();}
@@ -1033,7 +969,6 @@ function buildNotebook(){
   container.innerHTML=html;
 }
 
-/* BROADCAST */
 function setNextDate(){
   const now=new Date(),sched=(APP_DATA?.schedule||[]).filter(e=>new Date(e.date)>=now).sort((a,b)=>new Date(a.date)-new Date(b.date));
   if(sched.length){
@@ -1048,7 +983,6 @@ function setNextDate(){
   }
 }
 
-/* NAV */
 let cur='home',prev='home';
 function showScreen(name){
   if(name===cur)return;
@@ -1059,7 +993,6 @@ function showScreen(name){
 }
 function goBack(){showScreen(prev===cur?'home':prev);}
 function haptic(t){try{Telegram?.WebApp?.HapticFeedback?.impactOccurred(t==='success'?'heavy':'light');}catch(e){}}
-
 function openLink(url){
   if(!url||url==='#'){haptic('light');return;}
   try{
@@ -1068,18 +1001,13 @@ function openLink(url){
     else window.open(url,'_blank');
   }catch(e){window.open(url,'_blank');}
 }
-
 let _tt;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2200);}
 
-/* SWIPE */
 let _sx=0,_sy=0;
 document.addEventListener('touchstart',e=>{_sx=e.changedTouches[0].screenX;_sy=e.changedTouches[0].screenY;},{passive:true});
 document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-_sx,dy=e.changedTouches[0].screenY-_sy;if(dx>70&&Math.abs(dx)>Math.abs(dy)*1.5&&cur!=='home')goBack();});
 
-/* ═══════════════════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════════════════ */
 function forceHideLoader(){
   const el=document.getElementById('loading-overlay');
   if(el&&!el.classList.contains('done')) el.classList.add('done');
@@ -1088,26 +1016,26 @@ function forceHideLoader(){
 async function init(){
   try{Telegram?.WebApp?.ready();Telegram?.WebApp?.expand();}catch(e){}
 
-  // АВАРИЙНЫЙ ТАЙМЕР — лоадер гарантированно скроется через 5 секунд при любом раскладе
-  const emergencyHide = setTimeout(forceHideLoader, 5000);
+  const emergencyTimer = setTimeout(()=>{
+    if(!APP_DATA) APP_DATA = FALLBACK;
+    try{ buildCards(); buildScreens(); buildOther(); }catch(e){}
+    forceHideLoader();
+  }, 12000);
 
-  // ШАГ 1: Сразу показываем UI из FALLBACK (мгновенно, без ожидания таблицы)
+  const cats_pre = FALLBACK.sections.map(s=>s.id);
+  const progKeys = cats_pre.map(c=>'prog_'+c);
+  const noteKeys = cats_pre.flatMap(c=>(FALLBACK.lessons[c]||[]).map((_,i)=>`note_${c}_${i}`));
+  const moodKeys = Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return'mood_'+d.toDateString();});
+  const misc = ['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
+
+  let csTimer1;
+  await new Promise(resolve=>{
+    csTimer1 = setTimeout(resolve, 3000);
+    CS.loadAll([...progKeys,...noteKeys,...moodKeys,...misc], ()=>{ clearTimeout(csTimer1); resolve(); });
+  });
+
   APP_DATA = FALLBACK;
-  buildCards();
-  buildScreens();
-  buildOther();
-
-  const cats=(APP_DATA.sections||[]).map(s=>s.id);
-  const progKeys=cats.map(c=>'prog_'+c);
-  const noteKeys=cats.flatMap(c=>(APP_DATA.lessons[c]||[]).map((_,i)=>`note_${c}_${i}`));
-  const moodKeys=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return'mood_'+d.toDateString();});
-  const misc=['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
-
-  // Загружаем личные данные с таймаутом 3 секунды
-  await Promise.race([
-    new Promise(resolve => CS.loadAll([...progKeys,...noteKeys,...moodKeys,...misc], resolve)),
-    new Promise(resolve => setTimeout(resolve, 3000))
-  ]);
+  buildCards(); buildScreens(); buildOther();
 
   try{const user=Telegram?.WebApp?.initDataUnsafe?.user;document.getElementById('username').textContent=user?.first_name||'Участник';}catch(e){}
   const sub=document.getElementById('greeting-sub');if(sub)sub.textContent=GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
@@ -1115,36 +1043,44 @@ async function init(){
   buildAllLessons();updateAllProgress();setNextDate();
   loadTodayMood();initWeeklyTask();initNotifyBell();
 
-  // Сразу скрываем лоадер — пользователь видит интерфейс
-  clearTimeout(emergencyHide);
-  forceHideLoader();
+  clearTimeout(emergencyTimer);
+  setTimeout(()=>forceHideLoader(), 300);
 
-  // ШАГ 2: В ФОНЕ грузим свежие данные из таблицы (с таймаутом 10 сек)
-  // Если таблица не отвечает — приложение всё равно работает на FALLBACK
   const sheetData = await Promise.race([
     loadFromSheets(),
-    new Promise(resolve => setTimeout(() => resolve(null), 10000))
+    new Promise(resolve => setTimeout(() => resolve(null), 12000))
   ]);
 
   if(sheetData){
     APP_DATA = sheetData;
-    // Перерисовываем секции и уроки с актуальными данными
-    document.getElementById('cards-practices').innerHTML='';
-    document.getElementById('cards-tools').innerHTML='';
-    document.getElementById('dynamic-screens').innerHTML='';
-    buildCards(); buildScreens(); buildOther();
-    buildAllLessons(); updateAllProgress();
-    setNextDate(); initCotd();
-    // Обновляем задание недели вручную из новых данных
+    const sectionsChanged = JSON.stringify(sheetData.sections.map(s=>s.id)) !== JSON.stringify(FALLBACK.sections.map(s=>s.id));
+    if(sectionsChanged){
+      document.getElementById('cards-practices').innerHTML='';
+      document.getElementById('cards-tools').innerHTML='';
+      document.getElementById('dynamic-screens').innerHTML='';
+      buildCards(); buildScreens();
+    }
+    buildOther();
+    buildAllLessons();
+    updateAllProgress();
+    setNextDate();
+    initCotd();
     const wt = APP_DATA.weekly;
-    if(wt){
-      const t=document.getElementById('wk-title'),d=document.getElementById('wk-desc'),c=document.getElementById('wk-countdown');
-      if(t)t.textContent=wt.title;
-      if(d)d.textContent=wt.desc;
-      if(c&&wt.deadline){const diff=Math.ceil((new Date(wt.deadline)-new Date())/86400000);c.textContent=diff>0?`⏳ ${diff} дн.`:'⌛ Завершено';}
+    if (wt) {
+      const titleEl = document.getElementById('wk-title');
+      const descEl  = document.getElementById('wk-desc');
+      const countEl = document.getElementById('wk-countdown');
+      if (titleEl) titleEl.textContent = wt.title;
+      if (descEl)  descEl.textContent  = wt.desc;
+      if (countEl && wt.deadline) {
+        const diff = Math.ceil((new Date(wt.deadline) - new Date()) / 86400000);
+        countEl.textContent = diff > 0 ? `⏳ ${diff} дн.` : '⌛ Завершено';
+      }
     }
     initWeeklyTask();
     console.log('✓ Данные таблицы обновлены');
+  } else {
+    console.warn('Таблица недоступна — используются сохранённые данные');
   }
 }
 
