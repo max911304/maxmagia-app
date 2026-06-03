@@ -388,6 +388,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 </div>
 
+<!-- Субстраницы генерируются динамически -->
 <div id="dynamic-screens"></div>
 
 <!-- OTHER -->
@@ -449,6 +450,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 <script>
 /* ═══════════════════════════════════════════════════════
    GOOGLE SHEETS ID
+   Таблица: https://docs.google.com/spreadsheets/d/1xHvl1J4YQ-Orkg1W9es9OHNPvi7BlA2z5ry0CnnFtwc
+   Чтобы сменить таблицу — замени только это значение
 ═══════════════════════════════════════════════════════ */
 const SHEET_ID = '1xHvl1J4YQ-Orkg1W9es9OHNPvi7BlA2z5ry0CnnFtwc';
 
@@ -469,7 +472,8 @@ const MOOD_LABELS = ['Ужас','Злость','Грусть','Не очень',
 const GREETINGS  = ['Сегодня отличный день для практики','Твоё присутствие здесь — уже шаг вперёд','Доверься процессу, всё идёт как надо','Выдели 10 минут — и мир изменится','Ты именно там, где должен быть сейчас','Магия начинается с тишины внутри','Слушай себя — ответы уже есть'];
 
 /* ═══════════════════════════════════════════════════════
-   РЕЗЕРВНЫЕ ДАННЫЕ (fallback если таблица недоступна)
+   РЕЗЕРВНЫЕ ДАННЫЕ
+   Используются если таблица недоступна
 ═══════════════════════════════════════════════════════ */
 const FALLBACK = {
   schedule:[
@@ -498,20 +502,45 @@ const FALLBACK = {
       {title:'Медитации других авторов',url:'https://t.me/c/3955955328/11/71'},
       {title:'Октябрь 25: Расслабляемся глубоко',soon:true},
       {title:'Ноябрь 25: Возвращение к себе',soon:true},
+      {title:'Декабрь 25: Восстановление самоценности',soon:true},
+      {title:'Январь 26: Работа с частями личности',soon:true},
+      {title:'Март 26: Оттепель',soon:true},
+      {title:'Май 26: Жизнь в неопределённости',soon:true},
     ],
     shield:[
       {title:'Что такое личные границы',soon:true},{title:'Виды токсичного общения',soon:true},
+      {title:'Чувства при манипуляциях',soon:true},{title:'Если границы сломаны',soon:true},
+      {title:'Защита психики',soon:true},{title:'Способ защиты №1',soon:true},
+      {title:'Способ защиты №2',soon:true},{title:'Способ защиты №3',soon:true},
     ],
     code:[
       {title:'Введение: Понять свои реакции',soon:true},{title:'Последствия отсутствия эволюции',soon:true},
+      {title:'Базовые психотравмы',soon:true},{title:'Родительские директивы',soon:true},
+      {title:'Дезадаптивные схемы',soon:true},
     ],
     future:[
       {title:'Введение в проектирование жизни',soon:true},{title:'Колесо баланса и ценности',soon:true},
+      {title:'Техника мечты и визуализации',soon:true},{title:'Препятствия на пути к цели',soon:true},
     ],
     ai:[{title:'Лаборатория ИИ — открыть канал',url:'https://t.me/c/3955955328/3',addedDate:'2026-05-22'}],
     archive:[{title:'AMA Сессии — открыть архив',url:'https://t.me/c/3955955328/13',addedDate:'2026-05-22'}],
-    myai:[{title:'ARCETYPE.AI',url:'https://chatgpt.com/g/g-67fe425adcec8191ad98c046c59bba89-archetype-ai',addedDate:'2026-05-27',badge:'ChatGPT'}],
-    records:[{title:'Записи встреч — в разработке',soon:true}],
+    myai:[
+      {title:'ARCETYPE.AI',url:'https://chatgpt.com/g/g-67fe425adcec8191ad98c046c59bba89-archetype-ai',addedDate:'2026-05-27',badge:'ChatGPT'},
+      {title:'Money-Archetype.AI',badge:'ChatGPT'},{title:'Поговори с ...',badge:'ChatGPT'},
+      {title:'Раскрутки убеждений фокусами языка',badge:'ChatGPT'},
+      {title:'Копирайтер Новосельцев',badge:'Claude'},{title:'ИИ маркетолог',badge:'Claude'},
+      {title:'Vasyan',badge:'ChatGPT'},{title:'MARVELON',badge:'ChatGPT'},
+      {title:'Архитектор будущего',badge:'Claude'},{title:'Милтон Эриксон AI',badge:'ChatGPT'},
+      {title:'Френк Фаррелли AI',badge:'ChatGPT'},{title:'Внушай и не ведись AI',badge:'Claude'},
+      {title:'Вирджиния Сатир AI',soon:true},
+    ],
+    records:[
+      {title:'Найди нужный тебе курс в складчине'},
+      {title:'Дмитрий Новосельцев — Копирайтинг как основа управления поведением человека'},
+      {title:'Дмитрий Новосельцев — ГСА'},
+      {title:'ИИ. Успевать всё'},{title:'ИИ. Создай сказку для своего малыша'},
+      {title:'Разминки',url:'https://t.me/c/3955955328/31'},
+    ],
   },
   other:[
     {icon:'📚',title:'Фильмы / Сериалы / Книги',url:'https://t.me/c/3955955328/24'},
@@ -522,122 +551,69 @@ const FALLBACK = {
   cotd:[
     {icon:'✦',tag:'Практика дня',text:'Сделай паузу на 3 минуты. Закрой глаза и просто слушай своё дыхание.',action:'↗ Попробовать сейчас'},
     {icon:'🌙',tag:'Вечерний ритуал',text:'Перед сном запиши три вещи за которые ты благодарен сегодня.',action:'↗ Взять блокнот'},
-    {icon:'🔥',tag:'Сила дня',text:'Сегодня твоя суперсила — умение сказать «нет».',action:'↗ Попробовать'},
+    {icon:'🔥',tag:'Сила дня',text:'Сегодня твоя суперсила — умение сказать «нет». Позволь себе отказаться от того что не твоё.',action:'↗ Попробовать'},
     {icon:'💧',tag:'Пауза',text:'Выпей стакан воды. Медленно. Почувствуй каждый глоток.',action:'↗ Пойти за водой'},
+    {icon:'🪞',tag:'Зеркало',text:'Скажи вслух: «Я имею право быть собой. Со мной всё в порядке».',action:'↗ Подойти к зеркалу'},
+    {icon:'📜',tag:'Вопрос дня',text:'Что бы ты делал если бы точно знал что не провалишься?',action:'↗ Записать'},
+    {icon:'🌿',tag:'Заземление',text:'Найди взглядом 5 предметов вокруг. Мысленно назови их. Почувствуй опору под ногами.',action:'↗ Оглядеться'},
   ],
 };
 
 /* ═══════════════════════════════════════════════════════
    GOOGLE SHEETS LOADER
-   Автоматически находит строку с заголовками —
-   декоративные шапки таблицы (строки 1-6) не мешают
 ═══════════════════════════════════════════════════════ */
 let APP_DATA = null;
 
-async function loadFromSheets() {
-  if (!SHEET_ID || SHEET_ID === 'ВСТАВЬ_ID_ТАБЛИЦЫ_СЮДА') return null;
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = csvRow(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = csvRow(line), obj = {};
+    headers.forEach((h,i) => { obj[h.trim()] = (vals[i]||'').trim(); });
+    return obj;
+  }).filter(r => Object.values(r).some(v=>v));
+}
+function csvRow(line) {
+  const res=[]; let cur='', inQ=false;
+  for (const ch of line) {
+    if (ch==='"') inQ=!inQ;
+    else if (ch===','&&!inQ) { res.push(cur); cur=''; }
+    else cur+=ch;
+  }
+  res.push(cur);
+  return res.map(s=>s.replace(/^"|"$/g,''));
+}
 
-  const fetchWithTimeout = (url, ms = 8000) => {
+async function loadFromSheets() {
+  if (!SHEET_ID || SHEET_ID==='ВСТАВЬ_ID_ТАБЛИЦЫ_СЮДА') return null;
+
+  const fetchWithTimeout = (url, ms=8000) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), ms);
-    return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+    return fetch(url, {signal: controller.signal}).finally(() => clearTimeout(timer));
   };
 
-  // Читаем лист и сами ищем строку-заголовок среди первых 10 строк
-  const readSheet = async (sheetName, knownHeaders) => {
+  // Читаем через gviz/tq JSON — работает без CORS для публичных таблиц
+  const readSheet = async (sheetName) => {
     try {
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
       const r = await fetchWithTimeout(url);
       if (!r.ok) return [];
       const text = await r.text();
+      // Google возвращает ответ вида: google.visualization.Query.setResponse({...})
       const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
       if (!json.table || !json.table.rows) return [];
 
-      const rawRows = json.table.rows;
-
-      let headerRowIndex = -1;
-      let cols = [];
-
-      // Извлекаем чистое имя колонки из label.
-      // Google склеивает декоративный текст с именем колонки:
-      // "🎯 ЗАДАНИЕ НЕДЕЛИ ... title Заголовок задания" → ищем "title" внутри строки
-      const cleanLabel = (label, knownList) => {
-        const s = (label || '').toLowerCase().trim();
-        // Ищем первое вхождение известного заголовка как отдельного слова
-        for (const h of knownList) {
-          // Слово должно быть окружено пробелами/началом/концом строки
-          if (new RegExp('(^|\\s)' + h + '(\\s|$)').test(s)) return h;
-        }
-        // Запасной вариант: последнее слово
-        const words = s.split(/\s+/);
-        return words[words.length - 1] || s;
-      };
-
-      // Вариант 1: Google сам определил заголовки в col.label
-      const autoLabels = json.table.cols.map(c => cleanLabel(c.label, knownHeaders));
-      const hasAutoHeaders = knownHeaders.some(h => autoLabels.includes(h));
-
-      if (hasAutoHeaders) {
-        cols = autoLabels;
-        // данные идут с rows[0], headerRowIndex остаётся -1
-      } else {
-        // Вариант 2: ищем строку с заголовками вручную среди первых 10 строк
-        for (let i = 0; i < Math.min(10, rawRows.length); i++) {
-          const row = rawRows[i];
-          if (!row.c) continue;
-          const cellValues = row.c.map(cell =>
-            cell && cell.v !== null && cell.v !== undefined
-              ? String(cell.v).toLowerCase().trim()
-              : ''
-          );
-          const matchCount = knownHeaders.filter(h => cellValues.includes(h)).length;
-          if (matchCount >= 1) {
-            cols = cellValues;
-            headerRowIndex = i;
-            break;
-          }
-        }
-      }
-
-      if (!cols.length) {
-        console.warn(`Sheet "${sheetName}": заголовки не найдены. autoLabels:`, autoLabels);
-        return [];
-      }
-
-      // Берём только строки после строки-заголовка
-      const dataRows = rawRows.slice(headerRowIndex + 1);
-
-      return dataRows.map(row => {
+      const cols = json.table.cols.map(c => (c.label || c.id || '').toLowerCase().trim());
+      return json.table.rows.map(row => {
         const obj = {};
         cols.forEach((col, i) => {
           const cell = row.c && row.c[i];
-          // Google gviz кодирует даты и время как Date(...)
-          // Время хранится как Date(1899,11,30,H,M,S) — определяем по году 1899
-          let cellVal = '';
-          if (cell && cell.v !== null && cell.v !== undefined) {
-            if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
-              const parts = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
-              const year = parts[0];
-              if (year === 1899) {
-                // Это время — берём форматированное значение .f ("19:30")
-                cellVal = cell.f ? String(cell.f).trim() : `${String(parts[3]).padStart(2,'0')}:${String(parts[4]).padStart(2,'0')}`;
-              } else {
-                // Это дата — конвертируем в YYYY-MM-DD (месяц 0-индексный)
-                cellVal = cell.f ? String(cell.f).trim()
-                  : `${parts[0]}-${String(parts[1]+1).padStart(2,'0')}-${String(parts[2]).padStart(2,'0')}`;
-              }
-            } else if (cell.f) {
-              cellVal = String(cell.f).trim();
-            } else {
-              cellVal = String(cell.v).trim();
-            }
-          }
-          obj[col] = cellVal;
+          obj[col] = cell && cell.v !== null && cell.v !== undefined ? String(cell.v).trim() : '';
         });
         return obj;
       }).filter(r => Object.values(r).some(v => v));
-
-    } catch (e) {
+    } catch(e) {
       console.warn('Sheet read failed:', sheetName, e.message);
       return [];
     }
@@ -645,80 +621,58 @@ async function loadFromSheets() {
 
   try {
     const [scheduleRows, sectionsRows, lessonsRows, otherRows, cotdRows, weeklyRows] = await Promise.all([
-      readSheet('schedule', ['date', 'time', 'title', 'zoom']),
-      readSheet('sections', ['id', 'icon', 'name', 'desc', 'group']),
-      readSheet('lessons',  ['section', 'title', 'url', 'addeddate', 'soon', 'badge']),
-      readSheet('other',    ['icon', 'title', 'url']),
-      readSheet('cotd',     ['icon', 'tag', 'text', 'action']),
-      readSheet('weekly',   ['title', 'desc', 'deadline']),
+      readSheet('schedule'),
+      readSheet('sections'),
+      readSheet('lessons'),
+      readSheet('other'),
+      readSheet('cotd'),
+      readSheet('weekly'),
     ]);
 
-    const data = { schedule: [], weekly: null, sections: [], lessons: {}, other: [], cotd: [] };
-
-    // Нормализуем дату: убираем время если оно есть ("2026-08-03 00:00:00" → "2026-08-03")
-    const normDate = (s) => s ? s.split(' ')[0].split('T')[0].trim() : s;
+    const data = {schedule:[],weekly:null,sections:[],lessons:{},other:[],cotd:[]};
 
     scheduleRows.forEach(r => {
-      if (r.date && r.title)
-        data.schedule.push({ date: normDate(r.date), time: r.time || '20:00', title: r.title, zoom: r.zoom || 'https://zoom.us' });
+      if(r.date&&r.title) data.schedule.push({date:r.date,time:r.time||'20:00',title:r.title,zoom:r.zoom||'https://zoom.us'});
     });
 
-    // Берём первую строку где title похож на реальное задание (не инструкцию)
-    // Пропускаем строки-подсказки вроде "Заголовок задания", "Описание (что нужно делать)"
-    const metaWords = ['заголовок', 'описание', 'дедлайн', 'yyyy', 'что нужно'];
-    const wRow = weeklyRows.find(r => {
-      if (!r.title) return false;
-      const t = r.title.toLowerCase();
-      return !metaWords.some(w => t.includes(w));
-    });
-    if (wRow && wRow.title)
-      data.weekly = { title: wRow.title, desc: wRow.desc || '', deadline: normDate(wRow.deadline) || '' };
+    const wRow = weeklyRows[0];
+    if(wRow&&wRow.title) data.weekly = {title:wRow.title, desc:wRow.desc||'', deadline:wRow.deadline||''};
 
     sectionsRows.forEach(r => {
-      if (r.id && r.name)
-        data.sections.push({ id: r.id, icon: r.icon || '📁', name: r.name, desc: r.desc || '', group: r.group || 'practices' });
+      if(r.id&&r.name) data.sections.push({id:r.id,icon:r.icon||'📁',name:r.name,desc:r.desc||'',group:r.group||'practices'});
     });
 
     lessonsRows.forEach(r => {
-      if (!r.section || !r.title) return;
-      if (!data.lessons[r.section]) data.lessons[r.section] = [];
-      const item = { title: r.title };
-      if (r.url && r.url !== '-' && r.url !== '')                   item.url = r.url;
-      if (r.addeddate && r.addeddate !== '-' && r.addeddate !== '') item.addedDate = r.addeddate;
-      if (r.soon && r.soon.toLowerCase() === 'true')                item.soon = true;
-      if (r.badge && r.badge !== '-' && r.badge !== '')             item.badge = r.badge;
+      if(!r.section||!r.title) return;
+      if(!data.lessons[r.section]) data.lessons[r.section]=[];
+      const item = {title:r.title};
+      if(r.url&&r.url!=='-'&&r.url!=='') item.url = r.url;
+      if(r.addeddate&&r.addeddate!=='-'&&r.addeddate!=='') item.addedDate = r.addeddate;
+      if(r.soon&&r.soon.toLowerCase()==='true') item.soon = true;
+      if(r.badge&&r.badge!=='-'&&r.badge!=='') item.badge = r.badge;
       data.lessons[r.section].push(item);
     });
 
     otherRows.forEach(r => {
-      if (r.title && r.url)
-        data.other.push({ icon: r.icon || '📎', title: r.title, url: r.url });
+      if(r.title&&r.url) data.other.push({icon:r.icon||'📎',title:r.title,url:r.url});
     });
 
     cotdRows.forEach(r => {
-      if (r.text)
-        data.cotd.push({ icon: r.icon || '✦', tag: r.tag || 'Практика дня', text: r.text, action: r.action || '↗ Попробовать' });
+      if(r.text) data.cotd.push({icon:r.icon||'✦',tag:r.tag||'Практика дня',text:r.text,action:r.action||'↗ Попробовать'});
     });
 
     // Заполняем пустое из fallback
-    if (!data.schedule.length)             data.schedule = FALLBACK.schedule;
-    if (!data.weekly)                      data.weekly   = FALLBACK.weekly;
-    if (!data.sections.length)             data.sections = FALLBACK.sections;
-    if (!Object.keys(data.lessons).length) data.lessons  = FALLBACK.lessons;
-    FALLBACK.sections.forEach(s => {
-      if (!data.lessons[s.id]) data.lessons[s.id] = FALLBACK.lessons[s.id] || [];
-    });
-    if (!data.other.length) data.other = FALLBACK.other;
-    if (!data.cotd.length)  data.cotd  = FALLBACK.cotd;
+    if(!data.schedule.length)  data.schedule = FALLBACK.schedule;
+    if(!data.weekly)           data.weekly   = FALLBACK.weekly;
+    if(!data.sections.length)  data.sections = FALLBACK.sections;
+    if(!Object.keys(data.lessons).length) data.lessons = FALLBACK.lessons;
+    FALLBACK.sections.forEach(s => { if(!data.lessons[s.id]) data.lessons[s.id] = FALLBACK.lessons[s.id]||[]; });
+    if(!data.other.length) data.other = FALLBACK.other;
+    if(!data.cotd.length)  data.cotd  = FALLBACK.cotd;
 
-    console.log('✓ Sheets loaded | sections:', data.sections.length,
-      '| schedule:', data.schedule.length,
-      '| cotd:', data.cotd.length,
-      '| weekly title:', data.weekly?.title,
-      '| lessons keys:', Object.keys(data.lessons));
+    console.log('Sheets loaded ✓ sections:', data.sections.length, 'lessons keys:', Object.keys(data.lessons));
     return data;
-
-  } catch (e) {
+  } catch(e) {
     console.warn('Sheets global error:', e.message);
     return null;
   }
@@ -726,54 +680,26 @@ async function loadFromSheets() {
 
 /* ═══════════════════════════════════════════════════════
    CLOUD STORAGE
-   Три слоя надёжности:
-   1. _c  — кеш в памяти (мгновенно)
-   2. localStorage — постоянное хранилище на устройстве
-   3. Telegram CloudStorage — облако (синхронизация)
-   Запись идёт во все. Чтение: кеш → CloudStorage → localStorage.
 ═══════════════════════════════════════════════════════ */
-const LS = {
-  get(k){ try{ return localStorage.getItem('mm_'+k); }catch(e){ return null; } },
-  set(k,v){ try{ localStorage.setItem('mm_'+k,v); }catch(e){} },
-};
-
 const CS = {
   _c:{}, _p:{},
-  set(k,v){
-    const s=JSON.stringify(v);
-    this._c[k]=s;
-    LS.set(k,s);
-    try{ if(Telegram?.WebApp?.CloudStorage) Telegram.WebApp.CloudStorage.setItem(k,s,()=>{}); }catch(e){}
-  },
+  set(k,v){ const s=JSON.stringify(v); this._c[k]=s; try{ if(Telegram?.WebApp?.CloudStorage) Telegram.WebApp.CloudStorage.setItem(k,s,()=>{}); else sessionStorage.setItem('mm_'+k,s); }catch(e){} },
   get(k,cb){
-    if(this._c[k]!==undefined){ try{cb(JSON.parse(this._c[k]))}catch(e){cb(null)} return; }
+    if(this._c[k]!==undefined){try{cb(JSON.parse(this._c[k]))}catch(e){cb(null)}return}
     try{
       if(Telegram?.WebApp?.CloudStorage){
-        if(this._p[k]){ this._p[k].push(cb); return; }
+        if(this._p[k]){this._p[k].push(cb);return}
         this._p[k]=[cb];
         Telegram.WebApp.CloudStorage.getItem(k,(err,val)=>{
-          const cbs=this._p[k]; delete this._p[k];
-          if(!err && val){
-            this._c[k]=val;
-            LS.set(k,val);
-            cbs.forEach(c=>{ try{c(JSON.parse(val))}catch(e){c(null)} });
-          } else {
-            const local=LS.get(k);
-            if(local){
-              this._c[k]=local;
-              try{ Telegram.WebApp.CloudStorage.setItem(k,local,()=>{}); }catch(e){}
-              cbs.forEach(c=>{ try{c(JSON.parse(local))}catch(e){c(null)} });
-            } else {
-              cbs.forEach(c=>c(null));
-            }
-          }
+          const cbs=this._p[k];delete this._p[k];
+          if(!err&&val){this._c[k]=val;cbs.forEach(c=>{try{c(JSON.parse(val))}catch(e){c(null)}})}
+          else cbs.forEach(c=>c(null));
         });
       } else {
-        const val=LS.get(k);
-        if(val){ this._c[k]=val; try{cb(JSON.parse(val))}catch(e){cb(null)} }
-        else cb(null);
+        const val=sessionStorage.getItem('mm_'+k);
+        if(val){this._c[k]=val;try{cb(JSON.parse(val))}catch(e){cb(null)}}else cb(null);
       }
-    }catch(e){ cb(null); }
+    }catch(e){cb(null)}
   },
   loadAll(keys,cb){ let p=keys.length; if(!p){cb();return} keys.forEach(k=>this.get(k,()=>{if(--p===0)cb()})); },
 };
@@ -1017,12 +943,6 @@ function closeMoodHistory(){document.getElementById('mood-modal').classList.remo
 function handleMoodModalBg(e){if(e.target===document.getElementById('mood-modal'))closeMoodHistory();}
 
 /* WEEKLY TASK */
-// Уникальный ключ задания = дедлайн + первые 20 символов названия
-// Это гарантирует сброс отметки при смене задания даже если дедлайн тот же
-function weeklyTaskKey(){
-  const wt=APP_DATA?.weekly||FALLBACK.weekly;
-  return (wt.deadline||'')+'__'+(wt.title||'').slice(0,20);
-}
 function initWeeklyTask(){
   const wt=APP_DATA?.weekly||FALLBACK.weekly;
   const titleEl=document.getElementById('wk-title'),descEl=document.getElementById('wk-desc'),countEl=document.getElementById('wk-countdown');
@@ -1033,11 +953,10 @@ function initWeeklyTask(){
     const f=document.getElementById('wk-fill'),p=document.getElementById('wk-prog-text');
     if(f)f.style.width=pct+'%';if(p)p.textContent=count>0?`${count} участников выполнили`:'Будь первым!';
   });
-  // Сравниваем по составному ключу — если задание поменялось, кнопка сбросится
-  CS.get('weekly_task_id',savedId=>{if(savedId===weeklyTaskKey())setWeeklyDoneUI(true);});
+  CS.get('weekly_task_id',savedId=>{if(savedId===(APP_DATA?.weekly||FALLBACK.weekly).deadline)setWeeklyDoneUI(true);});
 }
 function toggleWeeklyDone(){
-  const taskId=weeklyTaskKey();
+  const taskId=(APP_DATA?.weekly||FALLBACK.weekly).deadline;
   CS.get('weekly_task_id',savedId=>{
     if(savedId===taskId){
       CS.set('weekly_task_id',null);CS.get('weekly_done_count',c=>CS.set('weekly_done_count',Math.max(0,(c||0)-1)));
@@ -1070,10 +989,22 @@ function updateNotifyUI(){
   const bell=document.getElementById('notify-bell');if(bell)bell.style.opacity=selectedNotifyTime!=='off'?'1':'.5';
 }
 function saveNotifySettings(){
-  CS.set('notify_time',selectedNotifyTime);closeNotifyModal();
+  CS.set('notify_time',selectedNotifyTime);
   showToast(selectedNotifyTime==='off'?'🔕 Напоминания выключены':`🔔 Напоминания в ${selectedNotifyTime} сохранены`);
-  if(selectedNotifyTime!=='off'){try{Telegram?.WebApp?.sendData(JSON.stringify({action:'set_reminder',time:selectedNotifyTime}));}catch(e){}}
   haptic('success');
+  // Отправляем данные в бот ВСЕГДА — даже для 'off' (бот должен знать что выключили)
+  // Telegram гарантированно доставляет sendData только при закрытии WebApp,
+  // поэтому делаем sendData → задержка → close
+  try {
+    if (Telegram?.WebApp?.sendData) {
+      Telegram.WebApp.sendData(JSON.stringify({action:'set_reminder',time:selectedNotifyTime}));
+      // Закрываем WebApp через секунду — это триггерит реальную доставку sendData боту
+      setTimeout(()=>{ try { Telegram.WebApp.close(); } catch(e){} }, 600);
+      return;
+    }
+  } catch(e){}
+  // Если sendData недоступен (открыто в браузере) — просто закрываем модалку
+  closeNotifyModal();
 }
 function initNotifyBell(){CS.get('notify_time',t=>{const b=document.getElementById('notify-bell');if(b)b.style.opacity=(t&&t!=='off')?'1':'.5';});}
 
@@ -1149,7 +1080,6 @@ document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-_s
 /* ═══════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════ */
-// Аварийный сброс загрузки — на случай если что-то зависло
 function forceHideLoader(){
   const el=document.getElementById('loading-overlay');
   if(el&&!el.classList.contains('done')) el.classList.add('done');
@@ -1158,31 +1088,26 @@ function forceHideLoader(){
 async function init(){
   try{Telegram?.WebApp?.ready();Telegram?.WebApp?.expand();}catch(e){}
 
-  // Аварийный таймаут: через 12 секунд показываем fallback при любом раскладе
-  const emergencyTimer = setTimeout(()=>{
-    if(!APP_DATA) APP_DATA = FALLBACK;
-    try{ buildCards(); buildScreens(); buildOther(); }catch(e){}
-    forceHideLoader();
-  }, 12000);
+  // АВАРИЙНЫЙ ТАЙМЕР — лоадер гарантированно скроется через 5 секунд при любом раскладе
+  const emergencyHide = setTimeout(forceHideLoader, 5000);
 
-  // ── ШАГ 1: Сначала загружаем пользовательские данные из localStorage/CloudStorage
-  // Это быстро (~100ms) и позволяет сразу показать прогресс уроков, настроение и т.д.
-  const cats_pre = FALLBACK.sections.map(s=>s.id);
-  const progKeys = cats_pre.map(c=>'prog_'+c);
-  const noteKeys = cats_pre.flatMap(c=>(FALLBACK.lessons[c]||[]).map((_,i)=>`note_${c}_${i}`));
-  const moodKeys = Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return'mood_'+d.toDateString();});
-  const misc = ['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
-
-  let csTimer1;
-  await new Promise(resolve=>{
-    csTimer1 = setTimeout(resolve, 3000);
-    CS.loadAll([...progKeys,...noteKeys,...moodKeys,...misc], ()=>{ clearTimeout(csTimer1); resolve(); });
-  });
-
-  // ── ШАГ 2: Загружаем таблицу (свежие данные контента)
-  // Используем FALLBACK пока таблица грузится — сразу показываем интерфейс
+  // ШАГ 1: Сразу показываем UI из FALLBACK (мгновенно, без ожидания таблицы)
   APP_DATA = FALLBACK;
-  buildCards(); buildScreens(); buildOther();
+  buildCards();
+  buildScreens();
+  buildOther();
+
+  const cats=(APP_DATA.sections||[]).map(s=>s.id);
+  const progKeys=cats.map(c=>'prog_'+c);
+  const noteKeys=cats.flatMap(c=>(APP_DATA.lessons[c]||[]).map((_,i)=>`note_${c}_${i}`));
+  const moodKeys=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return'mood_'+d.toDateString();});
+  const misc=['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
+
+  // Загружаем личные данные с таймаутом 3 секунды
+  await Promise.race([
+    new Promise(resolve => CS.loadAll([...progKeys,...noteKeys,...moodKeys,...misc], resolve)),
+    new Promise(resolve => setTimeout(resolve, 3000))
+  ]);
 
   try{const user=Telegram?.WebApp?.initDataUnsafe?.user;document.getElementById('username').textContent=user?.first_name||'Участник';}catch(e){}
   const sub=document.getElementById('greeting-sub');if(sub)sub.textContent=GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
@@ -1190,57 +1115,36 @@ async function init(){
   buildAllLessons();updateAllProgress();setNextDate();
   loadTodayMood();initWeeklyTask();initNotifyBell();
 
-  // Скрываем лоадер сразу — пользователь видит интерфейс
-  clearTimeout(emergencyTimer);
-  setTimeout(()=>forceHideLoader(), 300);
+  // Сразу скрываем лоадер — пользователь видит интерфейс
+  clearTimeout(emergencyHide);
+  forceHideLoader();
 
-  // ── ШАГ 3: В фоне грузим таблицу и ОБНОВЛЯЕМ данные без перезагрузки страницы
-  // Таймаут 12 секунд — мобильный интернет бывает медленным
+  // ШАГ 2: В ФОНЕ грузим свежие данные из таблицы (с таймаутом 10 сек)
+  // Если таблица не отвечает — приложение всё равно работает на FALLBACK
   const sheetData = await Promise.race([
     loadFromSheets(),
-    new Promise(resolve => setTimeout(() => resolve(null), 12000))
+    new Promise(resolve => setTimeout(() => resolve(null), 10000))
   ]);
 
   if(sheetData){
-    const wasUsingFallback = (APP_DATA === FALLBACK);
     APP_DATA = sheetData;
-
-    // Перерисовываем только динамический контент — карточки не трогаем если секции не изменились
-    const sectionsChanged = JSON.stringify(sheetData.sections.map(s=>s.id)) !==
-                            JSON.stringify(FALLBACK.sections.map(s=>s.id));
-    if(sectionsChanged){
-      document.getElementById('cards-practices').innerHTML='';
-      document.getElementById('cards-tools').innerHTML='';
-      document.getElementById('dynamic-screens').innerHTML='';
-      buildCards(); buildScreens();
-    }
-    buildOther();
-    buildAllLessons();
-    updateAllProgress();
-
-    // Обновляем виджеты с актуальными данными из таблицы
-    setNextDate();      // расписание
-    initCotd();         // карта дня
-
-    // Задание недели — принудительно обновляем текст из таблицы
-    // (независимо от кешированного ключа)
+    // Перерисовываем секции и уроки с актуальными данными
+    document.getElementById('cards-practices').innerHTML='';
+    document.getElementById('cards-tools').innerHTML='';
+    document.getElementById('dynamic-screens').innerHTML='';
+    buildCards(); buildScreens(); buildOther();
+    buildAllLessons(); updateAllProgress();
+    setNextDate(); initCotd();
+    // Обновляем задание недели вручную из новых данных
     const wt = APP_DATA.weekly;
-    if (wt) {
-      const titleEl = document.getElementById('wk-title');
-      const descEl  = document.getElementById('wk-desc');
-      const countEl = document.getElementById('wk-countdown');
-      if (titleEl) titleEl.textContent = wt.title;
-      if (descEl)  descEl.textContent  = wt.desc;
-      if (countEl && wt.deadline) {
-        const diff = Math.ceil((new Date(wt.deadline) - new Date()) / 86400000);
-        countEl.textContent = diff > 0 ? `⏳ ${diff} дн.` : '⌛ Завершено';
-      }
+    if(wt){
+      const t=document.getElementById('wk-title'),d=document.getElementById('wk-desc'),c=document.getElementById('wk-countdown');
+      if(t)t.textContent=wt.title;
+      if(d)d.textContent=wt.desc;
+      if(c&&wt.deadline){const diff=Math.ceil((new Date(wt.deadline)-new Date())/86400000);c.textContent=diff>0?`⏳ ${diff} дн.`:'⌛ Завершено';}
     }
-    initWeeklyTask(); // обновляет кнопку «Выполнено» по ключу
-
-    if(!wasUsingFallback) console.log('✓ Данные таблицы обновлены');
-  } else {
-    console.warn('Таблица недоступна — используются сохранённые данные');
+    initWeeklyTask();
+    console.log('✓ Данные таблицы обновлены');
   }
 }
 
