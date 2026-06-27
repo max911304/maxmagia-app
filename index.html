@@ -569,38 +569,252 @@ async function loadFromSheets() {
 const LS = {
   get(k){ try{ return localStorage.getItem('mm_'+k); }catch(e){ return null; } },
   set(k,v){ try{ localStorage.setItem('mm_'+k,v); }catch(e){} },
+  remove(k){ try{ localStorage.removeItem('mm_'+k); }catch(e){} },
 };
-const CS = {
-  _c:{}, _p:{},
-  set(k,v){
-    const s=JSON.stringify(v);
-    this._c[k]=s;
-    LS.set(k,s);
-    try{ if(Telegram?.WebApp?.CloudStorage) Telegram.WebApp.CloudStorage.setItem(k,s,()=>{}); }catch(e){}
+
+// ═══════════════════════════════════════════════════════════
+// SYNC — синхронизация всех пользовательских данных с Google Таблицей
+// При любом изменении CS.set(key, val) — данные сразу пишутся локально,
+// а через 1 сек в фоне отправляются в таблицу. При запуске приложения
+// сначала загружаем из таблицы, чтобы получить актуальные данные с других устройств.
+// ═══════════════════════════════════════════════════════════
+const Sync = {
+  // Маппинг локальных ключей CS на поля в Google Таблице
+  // Эти поля синхронизируются между устройствами
+  SYNCED_FIELDS: {
+    cotd_favs:        'favorites_cotd',
+    notes_map:        'notes',           // объединяем все notes в один объект
+    moods_map:        'moods',           // объединяем все moods в один объект
+    weekly_done:      'weekly_done',     // массив выполненных заданий
+    lessons_done:     'lessons_done',    // объект {section: [idx,...]}
+    streak_count:     'streak',
+    theme:            'theme',
   },
-  get(k,cb){
-    if(this._c[k]!==undefined){ try{cb(JSON.parse(this._c[k]))}catch(e){cb(null)} return; }
-    try{
-      if(Telegram?.WebApp?.CloudStorage){
-        if(this._p[k]){ this._p[k].push(cb); return; }
-        this._p[k]=[cb];
-        Telegram.WebApp.CloudStorage.getItem(k,(err,val)=>{
-          const cbs=this._p[k]; delete this._p[k];
-          if(!err && val){ this._c[k]=val; LS.set(k,val); cbs.forEach(c=>{ try{c(JSON.parse(val))}catch(e){c(null)} }); }
-          else {
-            const local=LS.get(k);
-            if(local){ this._c[k]=local; try{ Telegram.WebApp.CloudStorage.setItem(k,local,()=>{}); }catch(e){} cbs.forEach(c=>{ try{c(JSON.parse(local))}catch(e){c(null)} }); }
-            else { cbs.forEach(c=>c(null)); }
-          }
-        });
-      } else {
-        const val=LS.get(k);
-        if(val){ this._c[k]=val; try{cb(JSON.parse(val))}catch(e){cb(null)} }
-        else cb(null);
+  _pendingSave: null,
+  _userId: null,
+
+  getUserId() {
+    if (this._userId) return this._userId;
+    try {
+      const user = Telegram?.WebApp?.initDataUnsafe?.user;
+      if (user && user.id) {
+        this._userId = String(user.id);
+        return this._userId;
       }
-    }catch(e){ cb(null); }
+    } catch(e) {}
+    return null;
   },
-  loadAll(keys,cb){ let p=keys.length; if(!p){cb();return} keys.forEach(k=>this.get(k,()=>{if(--p===0)cb()})); },
+
+  // Загружаем данные пользователя из таблицы (вызывается при init)
+  async loadFromCloud() {
+    const userId = this.getUserId();
+    if (!userId) return null;
+    try {
+      const url = SUBSCRIBE_URL + '?action=get_user_data&user_id=' + encodeURIComponent(userId);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6000);
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
+      const result = await response.json();
+      if (result.ok && result.data) {
+        // Распаковываем данные из таблицы в формат который понимает CS
+        this._applyCloudData(result.data);
+        console.log('✓ Sync loaded from cloud');
+        return result.data;
+      }
+      console.log('Sync: пользователь новый или данных нет');
+      return null;
+    } catch (e) {
+      console.warn('Sync loadFromCloud failed:', e.message);
+      return null;
+    }
+  },
+
+  // Применяем облачные данные к локальному CS (распаковываем JSON-поля)
+  _applyCloudData(data) {
+    if (data.favorites_cotd !== undefined && data.favorites_cotd !== null) {
+      CS._setLocal('cotd_favs', data.favorites_cotd);
+    }
+    if (data.streak !== undefined && data.streak !== null && data.streak !== '') {
+      CS._setLocal('streak_count', Number(data.streak) || 0);
+    }
+    if (data.theme) {
+      CS._setLocal('theme', String(data.theme));
+    }
+    if (data.weekly_done) {
+      // Это массив выполненных task_id. Берём последний — это текущий выполненный
+      if (Array.isArray(data.weekly_done) && data.weekly_done.length > 0) {
+        const last = data.weekly_done[data.weekly_done.length - 1];
+        CS._setLocal('weekly_task_id', last);
+      }
+    }
+    // Notes: объект {section_idx: text} → распаковываем в отдельные ключи note_section_idx
+    if (data.notes && typeof data.notes === 'object') {
+      Object.entries(data.notes).forEach(([k, v]) => {
+        if (v) CS._setLocal('note_' + k, v);
+      });
+    }
+    // Moods: объект {date_string: idx} → распаковываем в mood_<dateString>
+    if (data.moods && typeof data.moods === 'object') {
+      Object.entries(data.moods).forEach(([dateStr, idx]) => {
+        CS._setLocal('mood_' + dateStr, Number(idx));
+      });
+    }
+    // Lessons done: {section: [idx,...]} → распаковываем в prog_<section>
+    if (data.lessons_done && typeof data.lessons_done === 'object') {
+      Object.entries(data.lessons_done).forEach(([section, arr]) => {
+        if (Array.isArray(arr)) CS._setLocal('prog_' + section, arr);
+      });
+    }
+  },
+
+  // Триггер сохранения в облако (debounce 1 сек)
+  triggerSave() {
+    if (!this.getUserId()) return;
+    if (this._pendingSave) clearTimeout(this._pendingSave);
+    this._pendingSave = setTimeout(() => this._saveNow(), 1000);
+  },
+
+  // Собираем все локальные данные и отправляем одним запросом
+  async _saveNow() {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    const payload = {
+      action: 'save_user_data',
+      user_id: userId,
+    };
+
+    // Простые поля
+    const cotdFavs = CS._getLocalParsed('cotd_favs');
+    if (cotdFavs !== null) payload.favorites_cotd = cotdFavs;
+    const streak = CS._getLocalParsed('streak_count');
+    if (streak !== null) payload.streak = Number(streak) || 0;
+    const theme = CS._getLocalParsed('theme');
+    if (theme) payload.theme = theme;
+    const weeklyTaskId = CS._getLocalParsed('weekly_task_id');
+    if (weeklyTaskId) payload.weekly_done = [weeklyTaskId];
+
+    // Notes — собираем все note_* в один объект
+    const notes = {};
+    Object.keys(CS._c).forEach(k => {
+      if (k.startsWith('note_')) {
+        const subKey = k.slice(5);
+        const val = CS._getLocalParsed(k);
+        if (val) notes[subKey] = val;
+      }
+    });
+    if (Object.keys(notes).length) payload.notes = notes;
+
+    // Moods — собираем все mood_* в один объект
+    const moods = {};
+    Object.keys(CS._c).forEach(k => {
+      if (k.startsWith('mood_')) {
+        const dateStr = k.slice(5);
+        const val = CS._getLocalParsed(k);
+        if (val !== null && val !== undefined) moods[dateStr] = Number(val);
+      }
+    });
+    if (Object.keys(moods).length) payload.moods = moods;
+
+    // Lessons done — собираем prog_* в объект
+    const lessons = {};
+    Object.keys(CS._c).forEach(k => {
+      if (k.startsWith('prog_')) {
+        const section = k.slice(5);
+        const val = CS._getLocalParsed(k);
+        if (Array.isArray(val) && val.length) lessons[section] = val;
+      }
+    });
+    if (Object.keys(lessons).length) payload.lessons_done = lessons;
+
+    try {
+      const response = await fetch(SUBSCRIBE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (result.ok) {
+        console.log('✓ Sync saved');
+      } else {
+        console.warn('Sync save failed:', result.error);
+      }
+    } catch (e) {
+      console.warn('Sync save error:', e.message);
+      // Retry через 30 сек
+      setTimeout(() => this._saveNow(), 30000);
+    }
+  },
+};
+
+const CS = {
+  _c:{},
+  // Внутренняя запись только в локальный кеш + localStorage (без отправки в облако)
+  _setLocal(k, v) {
+    const s = JSON.stringify(v);
+    this._c[k] = s;
+    LS.set(k, s);
+  },
+  // Внутреннее чтение из локального кеша
+  _getLocalParsed(k) {
+    const raw = this._c[k];
+    if (raw === undefined) {
+      const ls = LS.get(k);
+      if (ls === null) return null;
+      this._c[k] = ls;
+      try { return JSON.parse(ls); } catch(e) { return null; }
+    }
+    try { return JSON.parse(raw); } catch(e) { return null; }
+  },
+  // Публичный set — сохраняет локально и триггерит синхронизацию
+  set(k, v) {
+    this._setLocal(k, v);
+    // Запускаем синхронизацию только для полей которые синхронизируются
+    // или их префиксов (note_, mood_, prog_)
+    const needsSync =
+      Sync.SYNCED_FIELDS[k] ||
+      k.startsWith('note_') ||
+      k.startsWith('mood_') ||
+      k.startsWith('prog_');
+    if (needsSync) Sync.triggerSave();
+  },
+  // Публичный get — асинхронный (для обратной совместимости с остальным кодом)
+  get(k, cb) {
+    if (this._c[k] !== undefined) {
+      try { cb(JSON.parse(this._c[k])); } catch(e) { cb(null); }
+      return;
+    }
+    const local = LS.get(k);
+    if (local !== null) {
+      this._c[k] = local;
+      try { cb(JSON.parse(local)); } catch(e) { cb(null); }
+    } else {
+      cb(null);
+    }
+  },
+  // Загружает все ключи (теперь работает с локальным кешем мгновенно)
+  loadAll(keys, cb) {
+    keys.forEach(k => {
+      if (this._c[k] === undefined) {
+        const local = LS.get(k);
+        if (local !== null) this._c[k] = local;
+      }
+    });
+    cb();
+  },
+  // Очистка локального кеша (для миграции на чистую таблицу)
+  clearLocal() {
+    this._c = {};
+    try {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('mm_')) keys.push(key);
+      }
+      keys.forEach(k => localStorage.removeItem(k));
+    } catch(e) {}
+  },
 };
 
 function buildCards() {
@@ -1022,18 +1236,34 @@ async function init(){
     forceHideLoader();
   }, 12000);
 
+  // ── ОДНОРАЗОВАЯ МИГРАЦИЯ: очищаем старые локальные данные
+  // (по запросу пользователя начинаем с чистого листа в новой версии с синхронизацией)
+  const MIGRATION_KEY = 'mm_migration_v4_sync';
+  if (!localStorage.getItem(MIGRATION_KEY)) {
+    try {
+      CS.clearLocal();
+      localStorage.setItem(MIGRATION_KEY, '1');
+      console.log('✓ Миграция: локальные данные очищены');
+    } catch(e) {}
+  }
+
+  // ── ШАГ 1: Загружаем данные пользователя из Google Таблицы (с таймаутом 6 сек)
+  // Это даёт синхронизацию между устройствами
+  await Promise.race([
+    Sync.loadFromCloud(),
+    new Promise(resolve => setTimeout(resolve, 6000))
+  ]);
+
+  // ── ШАГ 2: Догружаем что есть из localStorage
   const cats_pre = FALLBACK.sections.map(s=>s.id);
   const progKeys = cats_pre.map(c=>'prog_'+c);
   const noteKeys = cats_pre.flatMap(c=>(FALLBACK.lessons[c]||[]).map((_,i)=>`note_${c}_${i}`));
   const moodKeys = Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return'mood_'+d.toDateString();});
   const misc = ['streak_date','streak_count','cotd_date','cotd_idx','cotd_favs','last_cat','last_title','theme','notify_time','weekly_task_id','weekly_done_count'];
 
-  let csTimer1;
-  await new Promise(resolve=>{
-    csTimer1 = setTimeout(resolve, 3000);
-    CS.loadAll([...progKeys,...noteKeys,...moodKeys,...misc], ()=>{ clearTimeout(csTimer1); resolve(); });
-  });
+  CS.loadAll([...progKeys,...noteKeys,...moodKeys,...misc], ()=>{});
 
+  // ── ШАГ 3: Рисуем UI на fallback-данных (мгновенно)
   APP_DATA = FALLBACK;
   buildCards(); buildScreens(); buildOther();
 
@@ -1046,6 +1276,7 @@ async function init(){
   clearTimeout(emergencyTimer);
   setTimeout(()=>forceHideLoader(), 300);
 
+  // ── ШАГ 4: В фоне грузим таблицу с контентом (расписание, уроки, карты)
   const sheetData = await Promise.race([
     loadFromSheets(),
     new Promise(resolve => setTimeout(() => resolve(null), 12000))
