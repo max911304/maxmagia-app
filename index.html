@@ -615,14 +615,14 @@ const Sync = {
       const timer = setTimeout(() => controller.abort(), 6000);
       const response = await fetch(url, { signal: controller.signal });
       clearTimeout(timer);
+      if (!response.ok) throw new Error('HTTP ' + response.status);
       const result = await response.json();
       if (result.ok && result.data) {
-        // Распаковываем данные из таблицы в формат который понимает CS
         this._applyCloudData(result.data);
-        console.log('✓ Sync loaded from cloud');
+        console.log('✓ Sync loaded from cloud, fields:', Object.keys(result.data).join(', '));
         return result.data;
       }
-      console.log('Sync: пользователь новый или данных нет');
+      console.log('Sync: новый пользователь или данных нет в облаке');
       return null;
     } catch (e) {
       console.warn('Sync loadFromCloud failed:', e.message);
@@ -654,10 +654,19 @@ const Sync = {
         if (v) CS._setLocal('note_' + k, v);
       });
     }
-    // Moods: объект {date_string: idx} → распаковываем в mood_<dateString>
+    // Moods: объект {YYYY-MM-DD: idx} → конвертируем обратно в toDateString() формат
+    // потому что весь код приложения использует toDateString() как ключ
     if (data.moods && typeof data.moods === 'object') {
       Object.entries(data.moods).forEach(([dateStr, idx]) => {
-        CS._setLocal('mood_' + dateStr, Number(idx));
+        // Конвертируем YYYY-MM-DD → toDateString (например "Thu Jun 28 2026")
+        try {
+          const d = new Date(dateStr + 'T12:00:00'); // полдень чтобы не сбился таймзон
+          if (!isNaN(d)) {
+            CS._setLocal('mood_' + d.toDateString(), Number(idx));
+          }
+        } catch(e) {
+          CS._setLocal('mood_' + dateStr, Number(idx));
+        }
       });
     }
     // Lessons done: {section: [idx,...]} → распаковываем в prog_<section>
@@ -707,12 +716,29 @@ const Sync = {
     if (Object.keys(notes).length) payload.notes = notes;
 
     // Moods — собираем все mood_* в один объект
+    // Нормализуем ключ: toDateString() → YYYY-MM-DD для совместимости с облаком
+    const normalizeDateKey = (k) => {
+      // Если уже в формате YYYY-MM-DD — возвращаем как есть
+      if (/^\d{4}-\d{2}-\d{2}$/.test(k)) return k;
+      // Если в формате "Thu Jun 28 2026" — конвертируем
+      try {
+        const d = new Date(k);
+        if (!isNaN(d)) {
+          return d.getFullYear() + '-' +
+            String(d.getMonth()+1).padStart(2,'0') + '-' +
+            String(d.getDate()).padStart(2,'0');
+        }
+      } catch(e) {}
+      return k;
+    };
+
     const moods = {};
     Object.keys(CS._c).forEach(k => {
       if (k.startsWith('mood_')) {
-        const dateStr = k.slice(5);
+        const rawDate = k.slice(5);
+        const normDate = normalizeDateKey(rawDate);
         const val = CS._getLocalParsed(k);
-        if (val !== null && val !== undefined) moods[dateStr] = Number(val);
+        if (val !== null && val !== undefined) moods[normDate] = Number(val);
       }
     });
     if (Object.keys(moods).length) payload.moods = moods;
