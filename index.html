@@ -126,6 +126,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .boltalka-btn{display:flex;align-items:center;gap:12px;width:100%;padding:15px 18px;background:linear-gradient(135deg,rgba(200,169,110,.09),rgba(200,169,110,.03));border:1px solid var(--gold-border);border-radius:var(--r);cursor:pointer;text-decoration:none;transition:all .2s;position:relative;overflow:hidden;margin-bottom:8px}
 .boltalka-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 .boltalka-btn:active{transform:scale(.98)}
+.letter-btn{background:linear-gradient(135deg,rgba(200,169,110,.16),rgba(200,169,110,.05));border-color:rgba(200,169,110,.4)}
+.letter-btn .bb-title{color:var(--gold-hi)}
+.letter-btn::before{background:linear-gradient(90deg,transparent,var(--gold-hi),transparent);opacity:.8}
 .bb-icon{font-size:22px}.bb-body{flex:1}
 .bb-title{font-size:15px;font-weight:600;color:var(--gold-hi)}
 .bb-sub{font-size:11px;color:var(--gold);opacity:.5;font-weight:400;margin-top:1px}
@@ -323,6 +326,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
     <div class="boltalka-btn" onclick="openLink('https://t.me/c/3955955328/5')">
       <span class="bb-icon">🤖</span><div class="bb-body"><div class="bb-title">Болталка про ИИ</div><div class="bb-sub">Обсуждение нейронок</div></div><span class="bb-arrow">›</span>
+    </div>
+    <div class="boltalka-btn letter-btn" onclick="openLetter()">
+      <span class="bb-icon">✉️</span><div class="bb-body"><div class="bb-title">Письмо себе</div><div class="bb-sub">Сегодняшний ты — тому, кем станешь</div></div><span class="bb-arrow">›</span>
     </div>
   </div>
   <div class="section-header"><span class="section-label">Инструменты</span><span class="section-line"></span></div>
@@ -1240,6 +1246,11 @@ function openLink(url){
     else if(Telegram?.WebApp?.openLink)Telegram.WebApp.openLink(url,{try_instant_view:false});
     else window.open(url,'_blank');
   }catch(e){window.open(url,'_blank');}
+}
+function openLetter(){
+  haptic('light');
+  // Открываем страницу письма в том же WebApp-контейнере
+  window.location.href='letter.html';
 }
 let _tt;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2200);}
