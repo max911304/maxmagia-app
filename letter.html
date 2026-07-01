@@ -262,11 +262,11 @@ const Ritual = {
 
   init(){
     this.loadDraft();
-    // Заставка 2.8 сек → экран настройся
+    // Заставка 4 сек → экран настройся (успеть рассмотреть письмо)
     setTimeout(()=>{
       this.show('screen-intro');
       this.setProgress(3);
-    }, 2800);
+    }, 4000);
     this.spawnPollen();
     this.buildDates();
   },
@@ -432,8 +432,22 @@ const Ritual = {
       sendDate.setMonth(sendDate.getMonth()+this.selectedMonths);
       const sendStr = sendDate.getFullYear()+'-'+String(sendDate.getMonth()+1).padStart(2,'0')+'-'+String(sendDate.getDate()).padStart(2,'0');
 
-      const ok = await this.saveToCloud(sendStr);
-      if(ok){
+      const result = await this.saveToCloud(sendStr);
+      if(result.limit===true){
+        // Лимит 2 письма в месяц исчерпан
+        try{
+          TG.showPopup({
+            title:'📮 Почтовое отделение #MaxMagia',
+            message:'Мы будем рады увидеть тебя с твоим следующим письмом в следующем месяце! Сейчас мы заняты рассылкой тех писем, что уже написаны 🤍\n\nНапоминаем: можно отправить лишь 2 письма в месяц.',
+            buttons:[{type:'ok'}]
+          },()=>{ this.close(); });
+        }catch(e){
+          alert('Почтовое отделение #MaxMagia будет радо увидеть тебя со следующим письмом в следующем месяце! Можно отправить лишь 2 письма в месяц 🤍');
+          this.close();
+        }
+        return;
+      }
+      if(result.ok){
         this.clearDraft();
         const human = sendDate.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
         document.getElementById('sealed-date').textContent = 'Придёт '+human;
@@ -484,10 +498,13 @@ const Ritual = {
         body:JSON.stringify(payload),
       });
       const res = await r.json();
-      return res.ok===true;
+      if(res.limit===true){
+        return {limit:true};
+      }
+      return {ok: res.ok===true};
     }catch(e){
       console.warn('saveToCloud failed',e);
-      return false;
+      return {ok:false};
     }
   },
 
